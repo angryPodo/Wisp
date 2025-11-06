@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Wisp"
 include(":app")
-include(":Wisp")
+include(":wisp-runtime")
