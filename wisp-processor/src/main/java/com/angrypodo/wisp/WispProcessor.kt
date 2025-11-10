@@ -5,6 +5,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.validate
 
@@ -15,47 +16,55 @@ internal class WispProcessor(
     environment: SymbolProcessorEnvironment,
 ) : SymbolProcessor {
     private val logger = environment.logger
-    private val wispAnnotation = requireNotNull(Wisp::class.qualifiedName)
-    private val serializableShortName = "Serializable"
-    private val serializableAnnotation = "kotlinx.serialization.Serializable"
 
     /**
      * KSP가 코드를 분석할 때 호출되는 함수입니다.
      */
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(wispAnnotation)
+        val symbols = resolver.getSymbolsWithAnnotation(WISP_ANNOTATION)
             .filterIsInstance<KSClassDeclaration>()
 
         if (symbols.none()) return emptyList()
 
         logger.info("Wisp: found ${symbols.count()} @Wisp Route Symbols.")
 
-        symbols.forEach { routeClass ->
-            validateRoute(routeClass)
+        val (processableSymbols, deferredSymbols) = symbols.partition { it.validate() }
+
+
+        processableSymbols.forEach { routeClass ->
+            val routeInfo = routeClass.toRouteClassInfo()
+            val result = WispValidator.validate(routeInfo)
+
+            when (result) {
+                is WispValidator.ValidationResult.Success ->
+                    logger.info("Wisp: Route '${routeClass.simpleName.asString()}' validation successful.")
+
+                is WispValidator.ValidationResult.Failure ->
+                    logger.error(result.message, routeClass)
+            }
         }
 
-        return symbols.filterNot { it.validate() }.toList()
+        return deferredSymbols
     }
 
     /**
-     * 라우트 심볼이 @Serializable 어노테이션을 가지고 있는지 검증하는 함수입니다.
+     * KSP의 KSClassDeclaration을 RouteClassInfo로 변환하는 매퍼 함수입니다.
      */
-    private fun validateRoute(classDeclaration: KSClassDeclaration) {
-        val isSerializable = classDeclaration.annotations.any { annotation ->
-            annotation.shortName.asString() == serializableShortName && annotation.annotationType.resolve().declaration.qualifiedName?.asString() == serializableAnnotation
-        }
+    private fun KSClassDeclaration.toRouteClassInfo(): RouteClassInfo = RouteClassInfo(
+        qualifiedName = qualifiedName?.asString(),
+        simpleName = simpleName.asString(),
+        annotations = annotations.map { it.toAnnotationInfo() }.toList(),
+    )
 
-        if (!isSerializable) {
-            val className = classDeclaration.qualifiedName?.asString()
+    /**
+     * KSP의 KSAnnotation을 AnnotationInfo로 변환하는 매퍼 함수입니다.
+     */
+    private fun KSAnnotation.toAnnotationInfo(): AnnotationInfo = AnnotationInfo(
+        qualifiedName = annotationType.resolve().declaration.qualifiedName?.asString(),
+        shortName = shortName.asString(),
+    )
 
-            logger.error(
-                "Wisp Error: Route Class '$className' needs a @Wisp annotation with @Serializable annotation.",
-                classDeclaration
-            )
-
-            throw IllegalStateException("Validation failed for $className")
-        }
-
-        logger.info("Wisp: Route '${classDeclaration.simpleName.asString()}' validation successful.")
+    companion object {
+        private val WISP_ANNOTATION = requireNotNull(Wisp::class.qualifiedName)
     }
 }
