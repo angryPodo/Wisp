@@ -11,8 +11,8 @@ import com.google.devtools.ksp.validate
 /**
  * @Wisp 어노테이션이 붙은 클래스를 찾아 유효성을 검증하고 코드를 생성하는 메인 프로세서 클래스입니다.
  */
-class WispProcessor(
-    private val environment: SymbolProcessorEnvironment,
+internal class WispProcessor(
+    environment: SymbolProcessorEnvironment,
 ) : SymbolProcessor {
     private val logger = environment.logger
     private val wispAnnotation = requireNotNull(Wisp::class.qualifiedName)
