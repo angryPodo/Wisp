@@ -9,7 +9,8 @@ internal object WispValidator {
     fun validate(routeInfo: RouteClassInfo): ValidationResult {
         if (!routeInfo.isSerializable()) {
             return ValidationResult.Failure(
-                message = "Wisp Error: Route Class '${routeInfo.qualifiedName}' must be annotated with @Serializable."
+                message = "Wisp Error: Route Class '${routeInfo.qualifiedName}' " +
+                    "must be annotated with @Serializable."
             )
         }
 
