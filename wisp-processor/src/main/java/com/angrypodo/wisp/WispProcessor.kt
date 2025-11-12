@@ -13,7 +13,7 @@ import com.google.devtools.ksp.validate
  * @Wisp 어노테이션이 붙은 클래스를 찾아 유효성을 검증하고 코드를 생성하는 메인 프로세서 클래스입니다.
  */
 internal class WispProcessor(
-    environment: SymbolProcessorEnvironment,
+    environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val logger = environment.logger
 
@@ -30,14 +30,15 @@ internal class WispProcessor(
 
         val (processableSymbols, deferredSymbols) = symbols.partition { it.validate() }
 
-
         processableSymbols.forEach { routeClass ->
             val routeInfo = routeClass.toRouteClassInfo()
             val result = WispValidator.validate(routeInfo)
 
             when (result) {
                 is WispValidator.ValidationResult.Success ->
-                    logger.info("Wisp: Route '${routeClass.simpleName.asString()}' validation successful.")
+                    logger.info(
+                        "Wisp: Route '${routeClass.simpleName.asString()}' validation successful."
+                    )
 
                 is WispValidator.ValidationResult.Failure ->
                     logger.error(result.message, routeClass)
@@ -53,7 +54,7 @@ internal class WispProcessor(
     private fun KSClassDeclaration.toRouteClassInfo(): RouteClassInfo = RouteClassInfo(
         qualifiedName = qualifiedName?.asString(),
         simpleName = simpleName.asString(),
-        annotations = annotations.map { it.toAnnotationInfo() }.toList(),
+        annotations = annotations.map { it.toAnnotationInfo() }.toList()
     )
 
     /**
@@ -61,7 +62,7 @@ internal class WispProcessor(
      */
     private fun KSAnnotation.toAnnotationInfo(): AnnotationInfo = AnnotationInfo(
         qualifiedName = annotationType.resolve().declaration.qualifiedName?.asString(),
-        shortName = shortName.asString(),
+        shortName = shortName.asString()
     )
 
     companion object {

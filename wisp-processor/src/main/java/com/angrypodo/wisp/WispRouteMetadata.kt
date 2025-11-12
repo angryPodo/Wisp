@@ -6,7 +6,7 @@ package com.angrypodo.wisp
 internal data class RouteClassInfo(
     val qualifiedName: String?,
     val simpleName: String,
-    val annotations: List<AnnotationInfo>,
+    val annotations: List<AnnotationInfo>
 )
 
 /**
@@ -14,5 +14,5 @@ internal data class RouteClassInfo(
  */
 internal data class AnnotationInfo(
     val qualifiedName: String?,
-    val shortName: String,
+    val shortName: String
 )

@@ -16,7 +16,8 @@ class WispValidatorTest {
             simpleName = "TestRoute",
             annotations = emptyList()
         )
-        val expectedMessage = "Wisp Error: Route Class '${testInfo.qualifiedName}' must be annotated with @Serializable."
+        val expectedMessage = "Wisp Error: Route Class '${testInfo.qualifiedName}' " +
+            "must be annotated with @Serializable."
 
         // When
         val result = WispValidator.validate(testInfo)
