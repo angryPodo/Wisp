@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -28,10 +30,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
 
-    kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget.get()
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 dependencies {
@@ -41,7 +49,10 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
-    testImplementation(libs.junit)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

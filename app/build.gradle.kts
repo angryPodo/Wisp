@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.angrypodo.wisp.app"
+    namespace = "com.angrypodo.wisp"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
@@ -32,9 +34,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget.get()
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 dependencies {
@@ -50,7 +59,11 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
 
-    testImplementation(libs.junit)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
