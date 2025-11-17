@@ -8,8 +8,8 @@ import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FLOAT
+import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.KModifier
@@ -22,8 +22,16 @@ import com.squareup.kotlinpoet.TypeSpec
 internal class RouteFactoryGenerator {
 
     private val routeFactoryInterface = ClassName("com.angrypodo.wisp.runtime", "RouteFactory")
-    private val missingParameterError = ClassName("com.angrypodo.wisp.runtime", "WispError", "MissingParameter")
-    private val invalidParameterError = ClassName("com.angrypodo.wisp.runtime", "WispError", "InvalidParameter")
+    private val missingParameterError = ClassName(
+        "com.angrypodo.wisp.runtime",
+        "WispError",
+        "MissingParameter"
+    )
+    private val invalidParameterError = ClassName(
+        "com.angrypodo.wisp.runtime",
+        "WispError",
+        "InvalidParameter"
+    )
 
     fun generate(routeInfo: RouteInfo): FileSpec {
         val createFun = FunSpec.builder("create")
@@ -39,7 +47,10 @@ internal class RouteFactoryGenerator {
             .addFunction(createFun)
             .build()
 
-        return FileSpec.builder(routeInfo.factoryClassName.packageName, routeInfo.factoryClassName.simpleName)
+        return FileSpec.builder(
+            routeInfo.factoryClassName.packageName,
+            routeInfo.factoryClassName.simpleName
+        )
             .addType(factoryObject)
             .build()
     }

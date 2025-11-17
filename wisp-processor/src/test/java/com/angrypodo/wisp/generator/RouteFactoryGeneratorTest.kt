@@ -53,7 +53,11 @@ internal class RouteFactoryGeneratorTest {
 
         // Then: toIntOrNull()과 null 체크 및 예외 발생 코드가 포함되어야 한다
         assertTrue(generatedCode.contains("params[\"userId\"]?.toIntOrNull()"))
-        assertTrue(generatedCode.contains("?: throw WispError.InvalidParameter(\"profile/{userId}\", \"userId\")"))
+        assertTrue(
+            generatedCode.contains(
+                "?: throw WispError.InvalidParameter(\"profile/{userId}\", \"userId\")"
+            )
+        )
     }
 
     @Test
@@ -64,7 +68,12 @@ internal class RouteFactoryGeneratorTest {
             routeClassName = ClassName("com.example", "Search"),
             factoryClassName = ClassName("com.example", "SearchRouteFactory"),
             parameters = listOf(
-                ParameterInfo("query", STRING.copy(nullable = true), isNullable = true, isEnum = false)
+                ParameterInfo(
+                    "query",
+                    STRING.copy(nullable = true),
+                    isNullable = true,
+                    isEnum = false
+                )
             ),
             wispPath = "search"
         )
@@ -97,8 +106,16 @@ internal class RouteFactoryGeneratorTest {
         val generatedCode = fileSpec.toString()
 
         // Then: valueOf()와 uppercase()를 사용한 변환 코드가 포함되어야 한다
-        assertTrue(generatedCode.contains("runCatching { ContentType.valueOf(params[\"type\"]!!.uppercase()) }.getOrNull()"))
-        assertTrue(generatedCode.contains("?: throw WispError.InvalidParameter(\"content/{type}\", \"type\")"))
+        assertTrue(
+            generatedCode.contains(
+                "runCatching { ContentType.valueOf(params[\"type\"]!!.uppercase()) }.getOrNull()"
+            )
+        )
+        assertTrue(
+            generatedCode.contains(
+                "?: throw WispError.InvalidParameter(\"content/{type}\", \"type\")"
+            )
+        )
     }
 
     @Test
@@ -110,7 +127,12 @@ internal class RouteFactoryGeneratorTest {
             factoryClassName = ClassName("com.example", "ArticleRouteFactory"),
             parameters = listOf(
                 ParameterInfo("articleId", LONG, isNullable = false, isEnum = false),
-                ParameterInfo("isFeatured", BOOLEAN.copy(nullable = true), isNullable = true, isEnum = false)
+                ParameterInfo(
+                    "isFeatured",
+                    BOOLEAN.copy(nullable = true),
+                    isNullable = true,
+                    isEnum = false
+                )
             ),
             wispPath = "article/{articleId}"
         )
@@ -121,7 +143,13 @@ internal class RouteFactoryGeneratorTest {
 
         // Then: 각 파라미터에 대한 변환 코드가 모두 포함되어야 한다
         assertTrue(generatedCode.contains("params[\"articleId\"]?.toLongOrNull()"))
-        assertTrue(generatedCode.contains("val isFeatured = params[\"isFeatured\"]?.toBooleanStrictOrNull()"))
-        assertTrue(generatedCode.contains("return Article(articleId = articleId, isFeatured = isFeatured)"))
+        assertTrue(
+            generatedCode.contains(
+                "val isFeatured = params[\"isFeatured\"]?.toBooleanStrictOrNull()"
+            )
+        )
+        assertTrue(
+            generatedCode.contains("return Article(articleId = articleId, isFeatured = isFeatured)")
+        )
     }
 }
