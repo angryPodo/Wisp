@@ -1,5 +1,7 @@
 package com.angrypodo.wisp.generator
 
+import com.angrypodo.wisp.model.ClassRouteInfo
+import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
 import com.angrypodo.wisp.model.RouteInfo
 import com.squareup.kotlinpoet.ANY
@@ -43,14 +45,19 @@ internal class RouteFactoryGenerator {
     }
 
     private fun buildCreateFunctionBody(routeInfo: RouteInfo): CodeBlock {
-        val block = CodeBlock.builder()
-        routeInfo.parameters.forEach { parameter ->
-            val conversion = buildConversionCode(parameter, routeInfo.wispPath)
-            block.addStatement("val %L = %L", parameter.name, conversion)
+        return when (routeInfo) {
+            is ObjectRouteInfo -> CodeBlock.of("return %T", routeInfo.routeClassName)
+            is ClassRouteInfo -> {
+                val block = CodeBlock.builder()
+                routeInfo.parameters.forEach { parameter ->
+                    val conversion = buildConversionCode(parameter, routeInfo.wispPath)
+                    block.addStatement("val %L = %L", parameter.name, conversion)
+                }
+                val constructorArgs = routeInfo.parameters.joinToString(", ") { "${it.name} = ${it.name}" }
+                block.addStatement("return %T(%L)", routeInfo.routeClassName, constructorArgs)
+                block.build()
+            }
         }
-        val constructorArgs = routeInfo.parameters.joinToString(", ") { "${it.name} = ${it.name}" }
-        block.addStatement("return %T(%L)", routeInfo.routeClassName, constructorArgs)
-        return block.build()
     }
 
     private fun buildConversionCode(param: ParameterInfo, wispPath: String): CodeBlock {
