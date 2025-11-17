@@ -1,5 +1,7 @@
 package com.angrypodo.wisp.mapper
 
+import com.angrypodo.wisp.model.ClassRouteInfo
+import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
 import com.angrypodo.wisp.model.RouteInfo
 import com.google.devtools.ksp.symbol.ClassKind
@@ -13,11 +15,22 @@ private const val WISP_PATH_ARGUMENT = "path"
 
 internal fun KSClassDeclaration.toRouteInfo(): RouteInfo? {
     val wispPath = getWispPath() ?: return null
-    return RouteInfo(
-        routeClassName = toClassName(),
-        factoryClassName = ClassName(packageName.asString(), "${simpleName.asString()}RouteFactory"),
-        parameters = extractParameters(),
-        wispPath = wispPath
+    val routeClassName = toClassName()
+    val factoryClassName = ClassName(packageName.asString(), "${simpleName.asString()}RouteFactory")
+
+    if (classKind == ClassKind.OBJECT) {
+        return ObjectRouteInfo(
+            routeClassName = routeClassName,
+            factoryClassName = factoryClassName,
+            wispPath = wispPath
+        )
+    }
+
+    return ClassRouteInfo(
+        routeClassName = routeClassName,
+        factoryClassName = factoryClassName,
+        wispPath = wispPath,
+        parameters = extractParameters()
     )
 }
 
