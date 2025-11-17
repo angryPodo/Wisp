@@ -44,23 +44,38 @@ internal class RouteFactoryGenerator {
 
     private fun buildCreateFunctionBody(routeInfo: RouteInfo): CodeBlock {
         val block = CodeBlock.builder()
-
         routeInfo.parameters.forEach { parameter ->
             val conversion = buildConversionCode(parameter, routeInfo.wispPath)
             block.addStatement("val %L = %L", parameter.name, conversion)
         }
-
         val constructorArgs = routeInfo.parameters.joinToString(", ") { "${it.name} = ${it.name}" }
         block.addStatement("return %T(%L)", routeInfo.routeClassName, constructorArgs)
-
         return block.build()
     }
 
     private fun buildConversionCode(param: ParameterInfo, wispPath: String): CodeBlock {
         val rawAccess = CodeBlock.of("params[%S]", param.name)
-        val nonNullableType = param.typeName.copy(nullable = false)
+        val conversionLogic = getConversionLogic(param, rawAccess)
 
-        val conversionLogic = when {
+        if (param.isNullable) {
+            return conversionLogic
+        }
+
+        val nonNullableType = param.typeName.copy(nullable = false)
+        val errorType = if (nonNullableType == STRING) missingParameterError else invalidParameterError
+
+        return CodeBlock.of(
+            "(%L ?: throw %T(%S, %S))",
+            conversionLogic,
+            errorType,
+            wispPath,
+            param.name
+        )
+    }
+
+    private fun getConversionLogic(param: ParameterInfo, rawAccess: CodeBlock): CodeBlock {
+        val nonNullableType = param.typeName.copy(nullable = false)
+        return when {
             param.isEnum -> CodeBlock.of(
                 "runCatching { %T.valueOf(%L!!.uppercase()) }.getOrNull()",
                 nonNullableType,
@@ -73,19 +88,5 @@ internal class RouteFactoryGenerator {
             nonNullableType == FLOAT -> CodeBlock.of("%L?.toFloatOrNull()", rawAccess)
             else -> throw IllegalArgumentException("Unsupported type: ${param.typeName}")
         }
-
-        if (param.isNullable) {
-            return conversionLogic
-        }
-
-        val errorType = if (nonNullableType == STRING) missingParameterError else invalidParameterError
-
-        return CodeBlock.of(
-            "(%L ?: throw %T(%S, %S))",
-            conversionLogic,
-            errorType,
-            wispPath,
-            param.name
-        )
     }
 }
