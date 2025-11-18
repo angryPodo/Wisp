@@ -37,30 +37,54 @@ internal class WispProcessor(
     }
 
     private fun processSymbol(routeClass: KSClassDeclaration) {
-        if (!routeClass.hasSerializableAnnotation()) {
-            logger.error(
-                "Wisp Error: Route '${routeClass.qualifiedName?.asString()}' must be annotated with @Serializable.",
-                routeClass
-            )
+        if (!validateSerializable(routeClass)) {
             return
         }
 
         val routeInfo = routeClass.toRouteInfo() ?: run {
-            logger.error(
-                "Wisp Error: Route '${routeClass.simpleName.asString()}' is missing @Wisp path or has invalid parameters.",
-                routeClass
-            )
+            logInvalidRouteError(routeClass)
             return
         }
 
-        val fileSpec = factoryGenerator.generate(routeInfo)
-        fileSpec.writeTo(codeGenerator, Dependencies(true, routeClass.containingFile!!))
+        generateRouteFactory(routeClass, routeInfo)
     }
 
-    private fun KSClassDeclaration.hasSerializableAnnotation(): Boolean = annotations.any { annotation ->
-        val shortName = annotation.shortName.asString()
-        val qualifiedName = annotation.annotationType.resolve().declaration.qualifiedName?.asString()
-        shortName == SERIALIZABLE_SHORT_NAME && qualifiedName == SERIALIZABLE_ANNOTATION
+    private fun validateSerializable(routeClass: KSClassDeclaration): Boolean {
+        if (routeClass.hasSerializableAnnotation()) return true
+        val routeName = routeClass.qualifiedName?.asString()
+        logger.error(
+            "Wisp Error: Route '$routeName' must be annotated with @Serializable.",
+            routeClass
+        )
+        return false
+    }
+
+    private fun logInvalidRouteError(routeClass: KSClassDeclaration) {
+        val routeName = routeClass.simpleName.asString()
+        logger.error(
+            "Wisp Error: Route '$routeName' is missing @Wisp path or has invalid parameters.",
+            routeClass
+        )
+    }
+
+    private fun generateRouteFactory(
+        routeClass: KSClassDeclaration,
+        routeInfo: com.angrypodo.wisp.model.RouteInfo
+    ) {
+        val fileSpec = factoryGenerator.generate(routeInfo)
+        val dependencies = Dependencies(true, routeClass.containingFile!!)
+        fileSpec.writeTo(codeGenerator, dependencies)
+    }
+
+    private fun KSClassDeclaration.hasSerializableAnnotation(): Boolean {
+        return annotations.any { annotation ->
+            val shortName = annotation.shortName.asString()
+            val qualifiedName = annotation.annotationType.resolve()
+                .declaration.qualifiedName?.asString()
+            val isSerializable = shortName == SERIALIZABLE_SHORT_NAME &&
+                qualifiedName == SERIALIZABLE_ANNOTATION
+            isSerializable
+        }
     }
 
     companion object {
