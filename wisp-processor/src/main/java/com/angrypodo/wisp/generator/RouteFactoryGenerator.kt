@@ -64,7 +64,9 @@ internal class RouteFactoryGenerator {
                     val conversion = buildConversionCode(parameter, routeInfo.wispPath)
                     block.addStatement("val %L = %L", parameter.name, conversion)
                 }
-                val constructorArgs = routeInfo.parameters.joinToString(", ") { "${it.name} = ${it.name}" }
+                val constructorArgs = routeInfo.parameters.joinToString(", ") {
+                    "${it.name} = ${it.name}"
+                }
                 block.addStatement("return %T(%L)", routeInfo.routeClassName, constructorArgs)
                 block.build()
             }
@@ -80,7 +82,10 @@ internal class RouteFactoryGenerator {
         }
 
         val nonNullableType = param.typeName.copy(nullable = false)
-        val errorType = if (nonNullableType == STRING) missingParameterError else invalidParameterError
+        val errorType = when (nonNullableType) {
+            STRING -> missingParameterError
+            else -> invalidParameterError
+        }
 
         return CodeBlock.of(
             "(%L ?: throw %T(%S, %S))",
