@@ -35,9 +35,11 @@ internal fun KSClassDeclaration.toRouteInfo(): RouteInfo? {
 }
 
 private fun KSClassDeclaration.getWispPath(): String? {
-    val wispAnnotation = annotations.find { it.shortName.asString() == WISP_SIMPLE_NAME } ?: return null
-    val pathArgument = wispAnnotation.arguments.firstOrNull { it.name?.asString() == WISP_PATH_ARGUMENT }
-        ?: wispAnnotation.arguments.firstOrNull()
+    val wispAnnotation = annotations.find { it.shortName.asString() == WISP_SIMPLE_NAME }
+        ?: return null
+    val pathArgument =
+        wispAnnotation.arguments.firstOrNull { it.name?.asString() == WISP_PATH_ARGUMENT }
+            ?: wispAnnotation.arguments.firstOrNull()
     return pathArgument?.value as? String
 }
 
@@ -46,7 +48,8 @@ private fun KSClassDeclaration.extractParameters(): List<ParameterInfo> {
         val parameterName = parameter.name?.asString() ?: return@mapNotNull null
         val resolvedType = parameter.type.resolve()
         val declaration = resolvedType.declaration
-        val isEnum = declaration is KSClassDeclaration && declaration.classKind == ClassKind.ENUM_CLASS
+        val isEnum =
+            declaration is KSClassDeclaration && declaration.classKind == ClassKind.ENUM_CLASS
 
         ParameterInfo(
             name = parameterName,
