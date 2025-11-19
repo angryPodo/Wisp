@@ -22,7 +22,7 @@ internal class WispProcessor(
     private val logger: KSPLogger
 ) : SymbolProcessor {
 
-    private val factoryGenerator = RouteFactoryGenerator()
+    private val factoryGenerator = RouteFactoryGenerator(logger)
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(WISP_ANNOTATION)

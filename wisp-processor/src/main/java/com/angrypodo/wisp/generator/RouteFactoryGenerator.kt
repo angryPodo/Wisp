@@ -4,6 +4,7 @@ import com.angrypodo.wisp.model.ClassRouteInfo
 import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
 import com.angrypodo.wisp.model.RouteInfo
+import com.google.devtools.ksp.processing.KSPLogger
 import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
@@ -20,7 +21,9 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 
-internal class RouteFactoryGenerator {
+internal class RouteFactoryGenerator(
+    private val logger: KSPLogger
+) {
 
     private val routeFactoryInterface = ClassName("com.angrypodo.wisp.runtime", "RouteFactory")
     private val missingParameterError = ClassName(
@@ -111,7 +114,10 @@ internal class RouteFactoryGenerator {
             nonNullableType == BOOLEAN -> CodeBlock.of("%L?.toBooleanStrictOrNull()", rawAccess)
             nonNullableType == FLOAT -> CodeBlock.of("%L?.toFloatOrNull()", rawAccess)
             nonNullableType == DOUBLE -> CodeBlock.of("%L?.toDoubleOrNull()", rawAccess)
-            else -> throw IllegalArgumentException("Unsupported type: ${param.typeName}")
+            else -> {
+                logger.error("Wisp Error: Unsupported type '${param.typeName}' for parameter '${param.name}'.")
+                CodeBlock.of("null")
+            }
         }
     }
 }
