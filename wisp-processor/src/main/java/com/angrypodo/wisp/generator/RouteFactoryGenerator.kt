@@ -8,6 +8,7 @@ import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.DOUBLE
 import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -109,6 +110,7 @@ internal class RouteFactoryGenerator {
             nonNullableType == LONG -> CodeBlock.of("%L?.toLongOrNull()", rawAccess)
             nonNullableType == BOOLEAN -> CodeBlock.of("%L?.toBooleanStrictOrNull()", rawAccess)
             nonNullableType == FLOAT -> CodeBlock.of("%L?.toFloatOrNull()", rawAccess)
+            nonNullableType == DOUBLE -> CodeBlock.of("%L?.toDoubleOrNull()", rawAccess)
             else -> throw IllegalArgumentException("Unsupported type: ${param.typeName}")
         }
     }
