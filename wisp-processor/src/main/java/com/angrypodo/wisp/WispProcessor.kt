@@ -3,6 +3,7 @@ package com.angrypodo.wisp
 import com.angrypodo.wisp.annotations.Wisp
 import com.angrypodo.wisp.generator.RouteFactoryGenerator
 import com.angrypodo.wisp.mapper.toRouteInfo
+import com.angrypodo.wisp.model.RouteInfo
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -69,10 +70,10 @@ internal class WispProcessor(
 
     private fun generateRouteFactory(
         routeClass: KSClassDeclaration,
-        routeInfo: com.angrypodo.wisp.model.RouteInfo
+        routeInfo: RouteInfo
     ) {
         val fileSpec = factoryGenerator.generate(routeInfo)
-        val dependencies = Dependencies(true, routeClass.containingFile!!)
+        val dependencies = Dependencies(false, routeClass.containingFile!!)
         fileSpec.writeTo(codeGenerator, dependencies)
     }
 
