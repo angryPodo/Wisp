@@ -189,9 +189,9 @@ internal class RouteFactoryGeneratorTest {
             )
         )
         assertTrue(generatedCode.contains("params[\"rating\"]?.toFloatOrNull()"))
-        assertTrue(
-            generatedCode.contains("return Article(articleId = articleId, isFeatured = isFeatured, rating = rating)")
-        )
+        val expectedConstructor = "return Article(articleId = articleId, " +
+            "isFeatured = isFeatured, rating = rating)"
+        assertTrue(generatedCode.contains(expectedConstructor))
     }
 
     @Test

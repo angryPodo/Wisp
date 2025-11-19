@@ -115,7 +115,10 @@ internal class RouteFactoryGenerator(
             nonNullableType == FLOAT -> CodeBlock.of("%L?.toFloatOrNull()", rawAccess)
             nonNullableType == DOUBLE -> CodeBlock.of("%L?.toDoubleOrNull()", rawAccess)
             else -> {
-                logger.error("Wisp Error: Unsupported type '${param.typeName}' for parameter '${param.name}'.")
+                logger.error(
+                    "Wisp Error: Unsupported type " +
+                        "'${param.typeName}' for parameter '${param.name}'."
+                )
                 CodeBlock.of("null")
             }
         }
