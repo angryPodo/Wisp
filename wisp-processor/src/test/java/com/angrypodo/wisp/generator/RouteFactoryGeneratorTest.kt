@@ -3,18 +3,31 @@ package com.angrypodo.wisp.generator
 import com.angrypodo.wisp.model.ClassRouteInfo
 import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.KSNode
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.DOUBLE
+import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.STRING
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class RouteFactoryGeneratorTest {
 
-    private val generator = RouteFactoryGenerator()
+    private lateinit var logger: TestLogger
+    private lateinit var generator: RouteFactoryGenerator
+
+    @BeforeEach
+    fun setUp() {
+        logger = TestLogger()
+        generator = RouteFactoryGenerator(logger)
+    }
 
     @Test
     @DisplayName("파라미터가 없는 data object 라우트의 팩토리를 생성한다")
@@ -56,6 +69,32 @@ internal class RouteFactoryGeneratorTest {
         assertTrue(
             generatedCode.contains(
                 "?: throw WispError.InvalidParameter(\"profile/{userId}\", \"userId\")"
+            )
+        )
+    }
+
+    @Test
+    @DisplayName("NonNull Double 파라미터가 있는 라우트의 팩토리를 생성한다")
+    fun `generate_route_with_non_nullable_double`() {
+        // Given: Non-nullable Double 파라미터가 있는 라우트 정보
+        val routeInfo = ClassRouteInfo(
+            routeClassName = ClassName("com.example", "Product"),
+            factoryClassName = ClassName("com.example", "ProductRouteFactory"),
+            parameters = listOf(
+                ParameterInfo("price", DOUBLE, isNullable = false, isEnum = false)
+            ),
+            wispPath = "product/{price}"
+        )
+
+        // When: 코드를 생성하면
+        val fileSpec = generator.generate(routeInfo)
+        val generatedCode = fileSpec.toString()
+
+        // Then: toDoubleOrNull()과 null 체크 및 예외 발생 코드가 포함되어야 한다
+        assertTrue(generatedCode.contains("params[\"price\"]?.toDoubleOrNull()"))
+        assertTrue(
+            generatedCode.contains(
+                "?: throw WispError.InvalidParameter(\"product/{price}\", \"price\")"
             )
         )
     }
@@ -132,7 +171,8 @@ internal class RouteFactoryGeneratorTest {
                     BOOLEAN.copy(nullable = true),
                     isNullable = true,
                     isEnum = false
-                )
+                ),
+                ParameterInfo("rating", FLOAT, isNullable = false, isEnum = false)
             ),
             wispPath = "article/{articleId}"
         )
@@ -148,8 +188,60 @@ internal class RouteFactoryGeneratorTest {
                 "val isFeatured = params[\"isFeatured\"]?.toBooleanStrictOrNull()"
             )
         )
+        assertTrue(generatedCode.contains("params[\"rating\"]?.toFloatOrNull()"))
         assertTrue(
-            generatedCode.contains("return Article(articleId = articleId, isFeatured = isFeatured)")
+            generatedCode.contains("return Article(articleId = articleId, isFeatured = isFeatured, rating = rating)")
         )
+    }
+
+    @Test
+    @DisplayName("지원하지 않는 타입의 파라미터가 있으면 KSPLogger로 에러를 기록한다")
+    fun `log_error_for_unsupported_type`() {
+        // Given: 지원하지 않는 타입의 파라미터 정보
+        val unsupportedType = ClassName("java.util", "Date")
+        val routeInfo = ClassRouteInfo(
+            routeClassName = ClassName("com.example", "Event"),
+            factoryClassName = ClassName("com.example", "EventRouteFactory"),
+            parameters = listOf(
+                ParameterInfo("eventDate", unsupportedType, isNullable = false, isEnum = false)
+            ),
+            wispPath = "event/{eventDate}"
+        )
+
+        // When: 코드를 생성하면
+        generator.generate(routeInfo)
+
+        // Then: KSPLogger.error()가 호출되어야 한다
+        assertEquals(1, logger.errorMessages.size)
+        assertEquals(
+            "Wisp Error: Unsupported type 'java.util.Date' for parameter 'eventDate'.",
+            logger.errorMessages.first()
+        )
+    }
+}
+
+class TestLogger : KSPLogger {
+    val errorMessages = mutableListOf<String>()
+    val warningMessages = mutableListOf<String>()
+    val infoMessages = mutableListOf<String>()
+
+    override fun error(message: String, symbol: KSNode?) {
+        errorMessages.add(message)
+    }
+
+    override fun info(message: String, symbol: KSNode?) {
+        infoMessages.add(message)
+    }
+
+    override fun logging(message: String, symbol: KSNode?) {
+        infoMessages.add(message)
+    }
+
+    override fun warn(message: String, symbol: KSNode?) {
+        warningMessages.add(message)
+    }
+
+    override fun exception(e: Throwable) {
+        // Not used
     }
 }
