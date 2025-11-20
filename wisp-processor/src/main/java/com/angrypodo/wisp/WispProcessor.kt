@@ -2,6 +2,7 @@ package com.angrypodo.wisp
 
 import com.angrypodo.wisp.annotations.Wisp
 import com.angrypodo.wisp.generator.RouteFactoryGenerator
+import com.angrypodo.wisp.generator.WispRegistryGenerator
 import com.angrypodo.wisp.mapper.toRouteInfo
 import com.angrypodo.wisp.model.RouteInfo
 import com.google.devtools.ksp.processing.CodeGenerator
@@ -11,6 +12,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ksp.writeTo
 
@@ -32,22 +34,51 @@ internal class WispProcessor(
 
         val (processableSymbols, deferredSymbols) = symbols.partition { it.validate() }
 
-        processableSymbols.forEach { processSymbol(it) }
+        val routesWithSymbols = processableSymbols.mapNotNull { routeClass ->
+            val routeInfo = processSymbol(routeClass) ?: return@mapNotNull null
+            routeInfo to routeClass
+        }
+
+        if (!validateDuplicatePaths(routesWithSymbols)) return deferredSymbols
+
+        if (routesWithSymbols.isNotEmpty()) {
+            val routeInfos = routesWithSymbols.map { it.first }
+            val sourceFiles = routesWithSymbols.mapNotNull { it.second.containingFile }.distinct()
+
+            generateRouteRegistry(routeInfos, sourceFiles)
+        }
 
         return deferredSymbols
     }
 
-    private fun processSymbol(routeClass: KSClassDeclaration) {
-        if (!validateSerializable(routeClass)) {
-            return
-        }
+    private fun processSymbol(routeClass: KSClassDeclaration): RouteInfo? {
+        if (!validateSerializable(routeClass)) return null
 
         val routeInfo = routeClass.toRouteInfo() ?: run {
             logInvalidRouteError(routeClass)
-            return
+            return null
         }
 
         generateRouteFactory(routeClass, routeInfo)
+
+        return routeInfo
+    }
+
+    private fun validateDuplicatePaths(routesWithSymbols: List<Pair<RouteInfo, KSClassDeclaration>>): Boolean {
+        val duplicates = routesWithSymbols.groupBy { it.first.wispPath }
+            .filter { it.value.size > 1 }
+
+        if (duplicates.isEmpty()) return true
+
+        duplicates.forEach { (path, pairs) ->
+            pairs.forEach { (_, symbol) ->
+                logger.error(
+                    "Wisp Error: The path '$path' is already used by another route.",
+                    symbol
+                )
+            }
+        }
+        return false
     }
 
     private fun validateSerializable(routeClass: KSClassDeclaration): Boolean {
@@ -74,6 +105,15 @@ internal class WispProcessor(
     ) {
         val fileSpec = factoryGenerator.generate(routeInfo)
         val dependencies = Dependencies(false, routeClass.containingFile!!)
+        fileSpec.writeTo(codeGenerator, dependencies)
+    }
+
+    private fun generateRouteRegistry(
+        routeInfos: List<RouteInfo>,
+        sourceFiles: List<KSFile>
+    ) {
+        val fileSpec = WispRegistryGenerator.generate(routeInfos)
+        val dependencies = Dependencies(true, *sourceFiles.toTypedArray())
         fileSpec.writeTo(codeGenerator, dependencies)
     }
 
