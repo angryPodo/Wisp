@@ -1,5 +1,6 @@
 package com.angrypodo.wisp.generator
 
+import com.angrypodo.wisp.WispClassName.ROUTE_FACTORY
 import com.angrypodo.wisp.model.ClassRouteInfo
 import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
@@ -25,7 +26,6 @@ internal class RouteFactoryGenerator(
     private val logger: KSPLogger
 ) {
 
-    private val routeFactoryInterface = ClassName("com.angrypodo.wisp.runtime", "RouteFactory")
     private val missingParameterError = ClassName(
         "com.angrypodo.wisp.runtime",
         "WispError",
@@ -47,7 +47,7 @@ internal class RouteFactoryGenerator(
 
         val factoryObject = TypeSpec.objectBuilder(routeInfo.factoryClassName)
             .addModifiers(KModifier.INTERNAL)
-            .addSuperinterface(routeFactoryInterface)
+            .addSuperinterface(ROUTE_FACTORY)
             .addFunction(createFun)
             .build()
 
