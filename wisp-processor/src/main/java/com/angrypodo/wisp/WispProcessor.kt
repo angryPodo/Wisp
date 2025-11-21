@@ -64,7 +64,9 @@ internal class WispProcessor(
         return routeInfo
     }
 
-    private fun validateDuplicatePaths(routesWithSymbols: List<Pair<RouteInfo, KSClassDeclaration>>): Boolean {
+    private fun validateDuplicatePaths(
+        routesWithSymbols: List<Pair<RouteInfo, KSClassDeclaration>>
+    ): Boolean {
         val duplicates = routesWithSymbols.groupBy { it.first.wispPath }
             .filter { it.value.size > 1 }
 
