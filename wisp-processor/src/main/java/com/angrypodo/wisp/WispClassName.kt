@@ -7,4 +7,7 @@ internal object WispClassName {
     const val GENERATED_PACKAGE = "com.angrypodo.wisp.generated"
 
     val ROUTE_FACTORY = ClassName(RUNTIME_PACKAGE, "RouteFactory")
+
+    val MISSING_PARAMETER_ERROR = ClassName(RUNTIME_PACKAGE, "WispError", "MissingParameter")
+    val INVALID_PARAMETER_ERROR = ClassName(RUNTIME_PACKAGE, "WispError", "InvalidParameter")
 }
