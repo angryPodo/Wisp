@@ -1,5 +1,6 @@
 package com.angrypodo.wisp
 
+import com.angrypodo.wisp.WispValidator.validateDuplicatePaths
 import com.angrypodo.wisp.annotations.Wisp
 import com.angrypodo.wisp.generator.RouteFactoryGenerator
 import com.angrypodo.wisp.generator.WispRegistryGenerator
@@ -39,12 +40,17 @@ internal class WispProcessor(
             routeInfo to routeClass
         }
 
-        if (!validateDuplicatePaths(routesWithSymbols)) return deferredSymbols
+        val routeInfos = routesWithSymbols.map { it.first }
+
+        val duplicateValidationResult = validateDuplicatePaths(routeInfos)
+
+        if (duplicateValidationResult is WispValidator.ValidationResult.Failure) {
+            duplicateValidationResult.errors.forEach { logger.error(it) }
+            return deferredSymbols
+        }
 
         if (routesWithSymbols.isNotEmpty()) {
-            val routeInfos = routesWithSymbols.map { it.first }
             val sourceFiles = routesWithSymbols.mapNotNull { it.second.containingFile }.distinct()
-
             generateRouteRegistry(routeInfos, sourceFiles)
         }
 
@@ -62,25 +68,6 @@ internal class WispProcessor(
         generateRouteFactory(routeClass, routeInfo)
 
         return routeInfo
-    }
-
-    private fun validateDuplicatePaths(
-        routesWithSymbols: List<Pair<RouteInfo, KSClassDeclaration>>
-    ): Boolean {
-        val duplicates = routesWithSymbols.groupBy { it.first.wispPath }
-            .filter { it.value.size > 1 }
-
-        if (duplicates.isEmpty()) return true
-
-        duplicates.forEach { (path, pairs) ->
-            pairs.forEach { (_, symbol) ->
-                logger.error(
-                    "Wisp Error: The path '$path' is already used by another route.",
-                    symbol
-                )
-            }
-        }
-        return false
     }
 
     private fun validateSerializable(routeClass: KSClassDeclaration): Boolean {
