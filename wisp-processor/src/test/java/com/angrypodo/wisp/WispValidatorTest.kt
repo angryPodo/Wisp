@@ -26,7 +26,10 @@ class WispValidatorTest {
         assertTrue(result is WispValidator.ValidationResult.Failure) {
             "결과 타입은 Failure여야 합니다."
         }
-        assertEquals(expectedMessage, (result as WispValidator.ValidationResult.Failure).message)
+        assertEquals(
+            listOf(expectedMessage),
+            (result as WispValidator.ValidationResult.Failure).errors
+        )
     }
 
     @Test

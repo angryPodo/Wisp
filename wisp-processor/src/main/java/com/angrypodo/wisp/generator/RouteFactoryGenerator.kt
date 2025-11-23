@@ -1,5 +1,8 @@
 package com.angrypodo.wisp.generator
 
+import com.angrypodo.wisp.WispClassName.INVALID_PARAMETER_ERROR
+import com.angrypodo.wisp.WispClassName.MISSING_PARAMETER_ERROR
+import com.angrypodo.wisp.WispClassName.ROUTE_FACTORY
 import com.angrypodo.wisp.model.ClassRouteInfo
 import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
@@ -7,7 +10,6 @@ import com.angrypodo.wisp.model.RouteInfo
 import com.google.devtools.ksp.processing.KSPLogger
 import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.BOOLEAN
-import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.DOUBLE
 import com.squareup.kotlinpoet.FLOAT
@@ -24,19 +26,6 @@ import com.squareup.kotlinpoet.TypeSpec
 internal class RouteFactoryGenerator(
     private val logger: KSPLogger
 ) {
-
-    private val routeFactoryInterface = ClassName("com.angrypodo.wisp.runtime", "RouteFactory")
-    private val missingParameterError = ClassName(
-        "com.angrypodo.wisp.runtime",
-        "WispError",
-        "MissingParameter"
-    )
-    private val invalidParameterError = ClassName(
-        "com.angrypodo.wisp.runtime",
-        "WispError",
-        "InvalidParameter"
-    )
-
     fun generate(routeInfo: RouteInfo): FileSpec {
         val createFun = FunSpec.builder("create")
             .addModifiers(KModifier.OVERRIDE)
@@ -47,7 +36,7 @@ internal class RouteFactoryGenerator(
 
         val factoryObject = TypeSpec.objectBuilder(routeInfo.factoryClassName)
             .addModifiers(KModifier.INTERNAL)
-            .addSuperinterface(routeFactoryInterface)
+            .addSuperinterface(ROUTE_FACTORY)
             .addFunction(createFun)
             .build()
 
@@ -87,8 +76,8 @@ internal class RouteFactoryGenerator(
 
         val nonNullableType = param.typeName.copy(nullable = false)
         val errorType = when (nonNullableType) {
-            STRING -> missingParameterError
-            else -> invalidParameterError
+            STRING -> MISSING_PARAMETER_ERROR
+            else -> INVALID_PARAMETER_ERROR
         }
 
         return CodeBlock.of(
