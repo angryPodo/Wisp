@@ -26,6 +26,7 @@ internal class WispProcessor(
 ) : SymbolProcessor {
 
     private val factoryGenerator = RouteFactoryGenerator(logger)
+    private val registryGenerator = WispRegistryGenerator()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(WISP_ANNOTATION)
@@ -101,7 +102,7 @@ internal class WispProcessor(
         routeInfos: List<RouteInfo>,
         sourceFiles: List<KSFile>
     ) {
-        val fileSpec = WispRegistryGenerator.generate(routeInfos)
+        val fileSpec = registryGenerator.generate(routeInfos)
         val dependencies = Dependencies(true, *sourceFiles.toTypedArray())
         fileSpec.writeTo(codeGenerator, dependencies)
     }
