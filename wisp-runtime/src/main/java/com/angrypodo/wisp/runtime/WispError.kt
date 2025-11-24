@@ -10,4 +10,7 @@ sealed class WispError(override val message: String) : Exception(message) {
 
     class InvalidParameter(path: String, paramName: String) :
         WispError("Parameter \"$paramName\" in path \"$path\" could not be converted.")
+
+    class ParsingFailed(uri: String, reason: String) :
+        WispError("Failed to parse URI: $uri. Reason: $reason")
 }
