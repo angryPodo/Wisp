@@ -10,6 +10,7 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.MAP
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.SET
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 
@@ -17,6 +18,7 @@ internal object WispRegistryGenerator {
     private const val REGISTRY_NAME = "WispRegistry"
     private const val FACTORIES_PROPERTY_NAME = "factories"
     private const val GET_FACTORY_FUN_NAME = "getRouteFactory"
+    private const val GET_PATTERNS = "getPatterns"
 
     fun generate(routes: List<RouteInfo>): FileSpec {
         val mapType = MAP.parameterizedBy(STRING, ROUTE_FACTORY)
@@ -41,6 +43,12 @@ internal object WispRegistryGenerator {
             .addParameter("path", STRING)
             .returns(ROUTE_FACTORY.copy(nullable = true))
             .addStatement("return %N[path]", factoriesProperty)
+            .build()
+
+        val getPatternsFun = FunSpec.builder(GET_PATTERNS)
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(SET.parameterizedBy(STRING))
+            .addStatement("return %N.keys", factoriesProperty)
             .build()
 
         val registryObject = TypeSpec.objectBuilder(REGISTRY_NAME)

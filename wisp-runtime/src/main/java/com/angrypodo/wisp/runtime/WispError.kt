@@ -13,4 +13,7 @@ sealed class WispError(override val message: String) : Exception(message) {
 
     class ParsingFailed(uri: String, reason: String) :
         WispError("Failed to parse URI: $uri. Reason: $reason")
+
+    class UnknownPath(path: String) :
+        WispError("The path \"$path\" is not registered with any @Wisp annotation.")
 }
