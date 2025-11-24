@@ -16,5 +16,5 @@ import androidx.navigation.NavController
 fun NavController.navigateTo(uri: Uri) {
     val wisp = Wisp.getDefaultInstance()
     val routes = wisp.resolveRoutes(uri)
-    wisp.navigateTo(this, this.context, routes)
+    wisp.navigateTo(this, routes)
 }
