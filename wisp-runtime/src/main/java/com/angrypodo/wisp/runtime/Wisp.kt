@@ -23,11 +23,12 @@ class Wisp(
 
     /**
      * URI를 분석하여 @Serializable 라우트 객체의 리스트로 변환합니다.
+     * @throws WispError.UnknownPath 등록되지 않은 경로가 포함된 경우
      */
     fun resolveRoutes(uri: Uri): List<Any> {
         val paths = parser.parse(uri)
-        return paths.mapNotNull { path ->
-            registry.createRoute(path)
+        return paths.map { path ->
+            registry.createRoute(path) ?: throw WispError.UnknownPath(path)
         }
     }
 
@@ -42,14 +43,10 @@ class Wisp(
             val builder = NavDeepLinkBuilder(context).setGraph(navController.graph)
             routes.forEach { route ->
                 val routePattern = registry.getRoutePattern(route)
-                    ?: throw IllegalArgumentException(
-                        "Route pattern not found for ${route::class.simpleName}"
-                    )
+                    ?: throw IllegalArgumentException("Route pattern not found for ${route::class.simpleName}")
 
                 val destination = navController.graph.findNode(routePattern)
-                    ?: throw IllegalArgumentException(
-                        "Destination not found for route pattern: $routePattern"
-                    )
+                    ?: throw IllegalArgumentException("Destination not found for route pattern: $routePattern")
 
                 builder.addDestination(destination.id, destination.buildArguments(route))
             }
@@ -92,19 +89,18 @@ class Wisp(
 
 /**
  * NavDestination의 정보를 기반으로 route 객체로부터 Bundle을 생성합니다.
+ * 타입 이름을 비교하여, 여러 인자 중 @Serializable 객체 자신을 담는 인자를 정확히 찾아냅니다.
  */
 @Suppress("UNCHECKED_CAST")
 private fun NavDestination.buildArguments(route: Any): Bundle? {
-    if (arguments.isEmpty()) return null
-
-    if (arguments.size > 1) {
-        throw IllegalArgumentException(
-            "Destination for ${route::class.simpleName} should have only one argument " +
-                "for the route object, but found ${arguments.size}"
-        )
+    val argumentEntry = arguments.entries.find { (_, arg) ->
+        arg.type.name == route::class.qualifiedName
     }
 
-    val argumentEntry = arguments.entries.first()
+    if (argumentEntry == null) {
+        return if (arguments.isEmpty()) null else Bundle()
+    }
+
     val argumentName = argumentEntry.key
     val navType = argumentEntry.value.type as NavType<Any>
 
