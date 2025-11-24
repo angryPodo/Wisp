@@ -2,7 +2,6 @@ package com.angrypodo.wisp.runtime
 
 /**
  * Wisp 라이브러리에서 발생하는 런타임 에러를 정의하는 Sealed Class 입니다.
- * Issue #3에서 필요한 최소한의 에러 타입만 우선 정의합니다.
  */
 sealed class WispError(override val message: String) : Exception(message) {
     class MissingParameter(path: String, paramName: String) :
@@ -16,4 +15,7 @@ sealed class WispError(override val message: String) : Exception(message) {
 
     class UnknownPath(path: String) :
         WispError("The path \"$path\" is not registered with any @Wisp annotation.")
+
+    class NavigationFailed(reason: String, detail: String?) :
+        WispError("Navigation failed: $reason. Detail: $detail")
 }

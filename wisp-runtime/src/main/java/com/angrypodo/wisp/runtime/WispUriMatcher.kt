@@ -1,6 +1,6 @@
 package com.angrypodo.wisp.runtime
 
-internal object WispUriMatcher {
+object WispUriMatcher {
 
     /**
      * 입력된 URI와 라우트 패턴을 비교하여 매칭 여부를 확인하고 파라미터를 추출합니다.
