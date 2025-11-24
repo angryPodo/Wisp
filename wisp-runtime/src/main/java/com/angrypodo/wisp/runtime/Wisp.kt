@@ -43,10 +43,14 @@ class Wisp(
             val builder = NavDeepLinkBuilder(context).setGraph(navController.graph)
             routes.forEach { route ->
                 val routePattern = registry.getRoutePattern(route)
-                    ?: throw IllegalArgumentException("Route pattern not found for ${route::class.simpleName}")
+                    ?: throw IllegalArgumentException(
+                        "Route pattern not found for ${route::class.simpleName}"
+                    )
 
                 val destination = navController.graph.findNode(routePattern)
-                    ?: throw IllegalArgumentException("Destination not found for route pattern: $routePattern")
+                    ?: throw IllegalArgumentException(
+                        "Destination not found for route pattern: $routePattern"
+                    )
 
                 builder.addDestination(destination.id, destination.buildArguments(route))
             }
