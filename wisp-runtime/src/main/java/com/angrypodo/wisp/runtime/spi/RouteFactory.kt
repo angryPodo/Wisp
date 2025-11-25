@@ -1,4 +1,4 @@
-package com.angrypodo.wisp.runtime
+package com.angrypodo.wisp.runtime.spi
 
 /**
  * KSP가 생성하는 팩토리 클래스들이 구현할 인터페이스입니다.

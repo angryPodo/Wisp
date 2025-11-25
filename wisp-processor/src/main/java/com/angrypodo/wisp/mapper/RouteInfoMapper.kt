@@ -47,9 +47,8 @@ private fun KSClassDeclaration.extractParameters(): List<ParameterInfo> {
     return primaryConstructor?.parameters?.mapNotNull { parameter ->
         val parameterName = parameter.name?.asString() ?: return@mapNotNull null
         val resolvedType = parameter.type.resolve()
-        val declaration = resolvedType.declaration
         val isEnum =
-            declaration is KSClassDeclaration && declaration.classKind == ClassKind.ENUM_CLASS
+            (resolvedType.declaration as? KSClassDeclaration)?.classKind == ClassKind.ENUM_CLASS
 
         ParameterInfo(
             name = parameterName,

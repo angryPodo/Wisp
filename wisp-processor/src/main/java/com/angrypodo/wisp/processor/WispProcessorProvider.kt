@@ -1,4 +1,4 @@
-package com.angrypodo.wisp
+package com.angrypodo.wisp.processor
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

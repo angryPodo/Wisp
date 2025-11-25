@@ -29,10 +29,8 @@ internal class RegistryGeneratorTest {
         val routes = listOf(homeRoute, profileRoute)
 
         // When: 코드 생성 실행
-        val fileSpec = WispRegistryGenerator.generate(routes)
+        val fileSpec = WispRegistryGenerator().generate(routes)
         val generatedCode = fileSpec.toString()
-
-        println(generatedCode)
 
         // Then: 생성된 WispRegistry 객체를 반환
         assertTrue(generatedCode.contains("object WispRegistry"))

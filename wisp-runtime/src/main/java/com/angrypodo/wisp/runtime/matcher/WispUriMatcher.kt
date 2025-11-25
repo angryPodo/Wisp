@@ -1,4 +1,4 @@
-package com.angrypodo.wisp.runtime
+package com.angrypodo.wisp.runtime.matcher
 
 object WispUriMatcher {
 
@@ -19,23 +19,34 @@ object WispUriMatcher {
         if (pathSegments.size != patternSegments.size) return null
 
         val params = mutableMapOf<String, String>()
+        if (!matchPathSegments(params, pathSegments, patternSegments)) {
+            return null
+        }
 
+        if (query.isNotEmpty()) {
+            parseQueryString(query, params)
+        }
+
+        return params
+    }
+
+    private fun matchPathSegments(
+        params: MutableMap<String, String>,
+        pathSegments: List<String>,
+        patternSegments: List<String>
+    ): Boolean {
         for (i in patternSegments.indices) {
             val patternSegment = patternSegments[i]
             val pathSegment = pathSegments[i]
 
             if (isPlaceholder(patternSegment)) {
                 val key = patternSegment.removeSurrounding("{", "}")
-
                 params[key] = pathSegment
             } else if (!patternSegment.equals(pathSegment, ignoreCase = true)) {
-                return null
+                return false
             }
         }
-
-        if (query.isNotEmpty()) parseQueryString(query, params)
-
-        return params
+        return true
     }
 
     private fun isPlaceholder(segment: String): Boolean =

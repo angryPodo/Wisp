@@ -1,6 +1,6 @@
 package com.angrypodo.wisp
 
-import com.angrypodo.wisp.runtime.WispUriMatcher
+import com.angrypodo.wisp.runtime.matcher.WispUriMatcher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
