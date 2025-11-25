@@ -3,6 +3,9 @@ package com.angrypodo.wisp.runtime
 import android.net.Uri
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.angrypodo.wisp.runtime.parser.DefaultWispUriParser
+import com.angrypodo.wisp.runtime.parser.WispUriParser
+import com.angrypodo.wisp.runtime.spi.WispRegistrySpec
 
 /**
  * Wisp 라이브러리의 핵심 로직을 수행하고, 내비게이션 기능을 실행하는 클래스입니다.
@@ -53,13 +56,15 @@ class Wisp(
     companion object {
         private var instance: Wisp? = null
 
+        @JvmStatic
+        @Synchronized
         fun initialize(registry: WispRegistrySpec) {
             if (instance == null) {
                 instance = Wisp(registry)
             }
         }
 
-        internal fun getDefaultInstance(): Wisp {
+        fun getDefaultInstance(): Wisp {
             return instance ?: throw IllegalStateException(
                 "Wisp.initialize() must be called first in your Application class."
             )

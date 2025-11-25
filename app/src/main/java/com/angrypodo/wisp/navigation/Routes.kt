@@ -1,4 +1,4 @@
-package com.angrypodo.wisp
+package com.angrypodo.wisp.navigation
 
 import com.angrypodo.wisp.annotations.Wisp
 import kotlinx.serialization.Serializable
@@ -14,3 +14,7 @@ data class ProductDetail(val productId: String)
 @Serializable
 @Wisp("settings")
 data object Settings
+
+@Serializable
+@Wisp("splash")
+data object Splash

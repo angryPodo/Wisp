@@ -1,12 +1,12 @@
 package com.angrypodo.wisp.generator
 
-import com.angrypodo.wisp.WispClassName.INVALID_PARAMETER_ERROR
-import com.angrypodo.wisp.WispClassName.MISSING_PARAMETER_ERROR
-import com.angrypodo.wisp.WispClassName.ROUTE_FACTORY
 import com.angrypodo.wisp.model.ClassRouteInfo
 import com.angrypodo.wisp.model.ObjectRouteInfo
 import com.angrypodo.wisp.model.ParameterInfo
 import com.angrypodo.wisp.model.RouteInfo
+import com.angrypodo.wisp.util.WispClassName.INVALID_PARAMETER_ERROR
+import com.angrypodo.wisp.util.WispClassName.MISSING_PARAMETER_ERROR
+import com.angrypodo.wisp.util.WispClassName.ROUTE_FACTORY
 import com.google.devtools.ksp.processing.KSPLogger
 import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.BOOLEAN
@@ -105,8 +105,8 @@ internal class RouteFactoryGenerator(
             nonNullableType == DOUBLE -> CodeBlock.of("%L?.toDoubleOrNull()", rawAccess)
             else -> {
                 logger.error(
-                    "Wisp Error: Unsupported type " +
-                        "'${param.typeName}' for parameter '${param.name}'."
+                    "Wisp Error: Unsupported type '${param.typeName}'" +
+                        " for parameter '${param.name}'."
                 )
                 CodeBlock.of("null")
             }

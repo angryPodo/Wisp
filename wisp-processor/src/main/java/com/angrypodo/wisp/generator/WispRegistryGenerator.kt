@@ -1,7 +1,7 @@
 package com.angrypodo.wisp.generator
 
-import com.angrypodo.wisp.WispClassName
 import com.angrypodo.wisp.model.RouteInfo
+import com.angrypodo.wisp.util.WispClassName
 import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec

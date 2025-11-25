@@ -1,11 +1,11 @@
-package com.angrypodo.wisp
+package com.angrypodo.wisp.processor
 
-import com.angrypodo.wisp.WispValidator.validateDuplicatePaths
 import com.angrypodo.wisp.annotations.Wisp
 import com.angrypodo.wisp.generator.RouteFactoryGenerator
 import com.angrypodo.wisp.generator.WispRegistryGenerator
 import com.angrypodo.wisp.mapper.toRouteInfo
 import com.angrypodo.wisp.model.RouteInfo
+import com.angrypodo.wisp.validation.WispValidator
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -43,7 +43,7 @@ internal class WispProcessor(
 
         val routeInfos = routesWithSymbols.map { it.first }
 
-        val duplicateValidationResult = validateDuplicatePaths(routeInfos)
+        val duplicateValidationResult = WispValidator.validateDuplicatePaths(routeInfos)
 
         if (duplicateValidationResult is WispValidator.ValidationResult.Failure) {
             duplicateValidationResult.errors.forEach { logger.error(it) }

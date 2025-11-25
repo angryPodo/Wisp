@@ -1,6 +1,7 @@
-package com.angrypodo.wisp.runtime
+package com.angrypodo.wisp.runtime.parser
 
 import android.net.Uri
+import com.angrypodo.wisp.runtime.WispError
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 

@@ -1,4 +1,4 @@
-package com.angrypodo.wisp
+package com.angrypodo.wisp.validation
 
 import com.angrypodo.wisp.model.RouteInfo
 
@@ -8,24 +8,13 @@ internal object WispValidator {
         data class Failure(val errors: List<String>) : ValidationResult
     }
 
-    fun validate(routeInfo: RouteClassInfo): ValidationResult {
-        if (!routeInfo.isSerializable()) {
-            return ValidationResult.Failure(
-                listOf(
-                    "Wisp Error: Route Class '${routeInfo.qualifiedName}' " +
-                        "must be annotated with @Serializable."
-                )
-            )
-        }
-
-        return ValidationResult.Success
-    }
-
     fun validateDuplicatePaths(routes: List<RouteInfo>): ValidationResult {
         val duplicates = routes.groupBy { it.wispPath }
             .filter { it.value.size > 1 }
 
-        if (duplicates.isEmpty()) return ValidationResult.Success
+        if (duplicates.isEmpty()) {
+            return ValidationResult.Success
+        }
 
         val errorMessages = duplicates.map { (path, routeInfos) ->
             val conflictingClasses = routeInfos.joinToString(", ") { it.routeClassName.simpleName }
