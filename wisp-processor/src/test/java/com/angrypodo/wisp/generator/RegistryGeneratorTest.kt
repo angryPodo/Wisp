@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test
 internal class RegistryGeneratorTest {
 
     @Test
-    @DisplayName("RouteInfo를 받아 WispModuleRegistry 오브젝트와 맵을 생성한다")
+    @DisplayName("Should generate WispModuleRegistry object and map from RouteInfo")
     fun `generate_registry_with_multiple_routes`() {
-        // Given: RouteInfo 데이터 2개
+        // Given: Two RouteInfo objects
         val homeRoute = ObjectRouteInfo(
             routeClassName = ClassName("com.example", "Home"),
             factoryClassName = ClassName("com.example", "HomeRouteFactory"),
@@ -28,20 +28,22 @@ internal class RegistryGeneratorTest {
 
         val routes = listOf(homeRoute, profileRoute)
 
-        // When: 코드 생성 실행
+        // When: Code generation is executed
         val generatedRegistry = WispRegistryGenerator().generate(routes)
         val generatedCode = generatedRegistry.fileSpec.toString()
 
-        // Then: 생성된 WispModuleRegistry 객체를 반환 (해시값이 포함된 이름)
-        assertTrue(generatedCode.contains("object WispModuleRegistry_"))
-        // SPI 인터페이스 구현 확인
+        // Then: Return the generated WispModuleRegistry object (with a hash in its name)
+        assertTrue(generatedCode.contains("class WispModuleRegistry_"))
+        // Check for SPI interface implementation
         assertTrue(generatedCode.contains(": WispModuleRegistry"))
-        // 맵 생성 확인
-        assertTrue(generatedCode.contains("val factories: Map<String, RouteFactory> = mapOf("))
-        // getRoutes 메서드 확인
-        assertTrue(generatedCode.contains("override fun getRoutes"))
+        // Check for map creation
+        assertTrue(generatedCode.contains("private val factories:"))
+        assertTrue(generatedCode.contains("Map<String, RouteFactory>"))
+        assertTrue(generatedCode.contains("= mapOf("))
+        // Check for getRoutes method
+        assertTrue(generatedCode.contains("override fun getRoutes(): Map<String, RouteFactory>"))
 
-        // 라우트 팩토리 매핑 확인
+        // Check for route factory mappings
         assertTrue(generatedCode.contains("import com.example.HomeRouteFactory"))
         assertTrue(generatedCode.contains("\"home\" to HomeRouteFactory"))
 
