@@ -4,6 +4,8 @@
 
 **Wisp** is a type-safe, server-driven deep link library for Jetpack Compose. It allows you to dynamically build your navigation backstack from a single, standard URI, overcoming the static backstack limitations of the `navigation-compose` library.
 
+translation: [Read in Korean (한국어)](./README.ko.md)
+
 ## 🤔 Why Wisp?
 
 Standard deep links in Jetpack Compose often lead to predefined, static backstacks. It's challenging to implement scenarios where a server needs to dictate a dynamic user journey on the fly (e.g., `Product Screen -> Coupon Screen -> Checkout Screen`).
