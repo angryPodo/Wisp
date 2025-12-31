@@ -18,11 +18,13 @@ import com.angrypodo.wisp.navigation.Home
 import com.angrypodo.wisp.navigation.ProductDetail
 import com.angrypodo.wisp.navigation.Settings
 import com.angrypodo.wisp.navigation.Splash
+import com.angrypodo.wisp.navigation.UserRoute
 import com.angrypodo.wisp.runtime.navigateTo
 import com.angrypodo.wisp.ui.screens.HomeScreen
 import com.angrypodo.wisp.ui.screens.ProductDetailScreen
 import com.angrypodo.wisp.ui.screens.SettingsScreen
 import com.angrypodo.wisp.ui.screens.SplashScreen
+import com.angrypodo.wisp.ui.screens.UserScreen
 import com.angrypodo.wisp.ui.theme.WispTheme
 
 class MainActivity : ComponentActivity() {
@@ -57,18 +59,29 @@ private fun WispNavHost(deepLinkUri: Uri?) {
         composable<Home> {
             HomeScreen(
                 onNavigateToProduct = {
-                    val uri = "app://wisp?stack=product/123|settings".toUri()
+                    val uri = "app://wisp/product/settings?productId=123&showReviews=true".toUri()
                     navController.navigateTo(uri)
                 },
                 onNavigateToSettings = {
-                    val uri = "app://wisp?stack=settings".toUri()
+                    val uri = "app://wisp/settings".toUri()
+                    navController.navigateTo(uri)
+                },
+                onNavigateToMultiStack = {
+                    val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
                     navController.navigateTo(uri)
                 }
             )
         }
         composable<ProductDetail> { backStackEntry ->
             val productDetail: ProductDetail = backStackEntry.toRoute()
-            ProductDetailScreen(productId = productDetail.productId)
+            ProductDetailScreen(
+                productId = productDetail.productId,
+                showReviews = productDetail.showReviews
+            )
+        }
+        composable<UserRoute> { backStackEntry ->
+            val userRoute: UserRoute = backStackEntry.toRoute()
+            UserScreen(userId = userRoute.userId)
         }
         composable<Settings> {
             SettingsScreen()
