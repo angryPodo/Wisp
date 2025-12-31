@@ -7,8 +7,7 @@ internal object WispClassName {
     const val GENERATED_PACKAGE = "com.angrypodo.wisp.generated"
 
     val ROUTE_FACTORY = ClassName("com.angrypodo.wisp.runtime.spi", "RouteFactory")
-    val WISP_REGISTRY_SPEC = ClassName("com.angrypodo.wisp.runtime.spi", "WispRegistrySpec")
-    val WISP_URI_MATCHER = ClassName("com.angrypodo.wisp.runtime.matcher", "WispUriMatcher")
+    val WISP_MODULE_REGISTRY = ClassName("com.angrypodo.wisp.runtime.spi", "WispModuleRegistry")
 
     val UNKNOWN_PATH_ERROR = ClassName(RUNTIME_PACKAGE, "WispError", "UnknownPath")
     val MISSING_PARAMETER_ERROR = ClassName(RUNTIME_PACKAGE, "WispError", "MissingParameter")
