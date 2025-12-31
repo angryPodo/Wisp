@@ -24,16 +24,30 @@ class Wisp(
      */
     fun resolveRoutes(uri: Uri): List<Any> {
         val paths = parser.parse(uri)
+        val queryParams = getQueryParams(uri)
+
         return paths.map { path ->
-            matchAndCreate(path) ?: throw WispError.UnknownPath(path)
+            matchAndCreate(path, queryParams) ?: throw WispError.UnknownPath(path)
         }
     }
 
-    private fun matchAndCreate(path: String): Any? {
+    private fun getQueryParams(uri: Uri): Map<String, String> {
+        val params = mutableMapOf<String, String>()
+        uri.queryParameterNames.forEach { key ->
+            uri.getQueryParameter(key)?.let { value ->
+                params[key] = value
+            }
+        }
+        return params
+    }
+
+    private fun matchAndCreate(path: String, queryParams: Map<String, String>): Any? {
         for ((pattern, factory) in mergedRoutes) {
-            val params = WispUriMatcher.match(path, pattern)
-            if (params != null) {
-                return factory.create(params)
+            val pathVariables = WispUriMatcher.match(path, pattern)
+            if (pathVariables != null) {
+                // Path Variable과 Query Parameter 병합 (Query Param 우선순위 낮음)
+                val combinedParams = queryParams + pathVariables
+                return factory.create(combinedParams)
             }
         }
         return null
@@ -71,7 +85,9 @@ class Wisp(
 
         @JvmStatic
         @Synchronized
-        fun initialize() {
+        fun initialize(
+            parser: WispUriParser = DefaultWispUriParser()
+        ) {
             if (instance == null) {
                 val aggregatedRoutes = mutableMapOf<String, RouteFactory>()
                 val loader = ServiceLoader.load(WispModuleRegistry::class.java)
@@ -80,7 +96,7 @@ class Wisp(
                     aggregatedRoutes.putAll(registry.getRoutes())
                 }
 
-                instance = Wisp(aggregatedRoutes)
+                instance = Wisp(aggregatedRoutes, parser)
             }
         }
 
