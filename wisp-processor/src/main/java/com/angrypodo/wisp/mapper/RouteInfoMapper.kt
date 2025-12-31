@@ -54,7 +54,8 @@ private fun KSClassDeclaration.extractParameters(): List<ParameterInfo> {
             name = parameterName,
             typeName = resolvedType.toTypeName(),
             isNullable = resolvedType.isMarkedNullable,
-            isEnum = isEnum
+            isEnum = isEnum,
+            hasDefault = parameter.hasDefault
         )
     } ?: emptyList()
 }
