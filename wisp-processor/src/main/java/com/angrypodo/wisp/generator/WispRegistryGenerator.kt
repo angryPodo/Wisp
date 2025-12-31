@@ -25,7 +25,7 @@ internal class WispRegistryGenerator {
 
         val factoriesProperty = buildFactoriesProperty(routes)
 
-        val registryObject = TypeSpec.objectBuilder(registryClassName)
+        val registryObject = TypeSpec.classBuilder(registryClassName)
             .addSuperinterface(WispClassName.WISP_MODULE_REGISTRY) // Changed interface
             .addModifiers(KModifier.PUBLIC)
             .addProperty(factoriesProperty)

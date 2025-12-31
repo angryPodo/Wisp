@@ -8,12 +8,19 @@ import kotlinx.serialization.Serializable
 data object Home
 
 @Serializable
-@Wisp("product/{productId}")
-data class ProductDetail(val productId: String)
+@Wisp("product")
+data class ProductDetail(
+    val productId: Int,
+    val showReviews: Boolean = false
+)
 
 @Serializable
 @Wisp("settings")
 data object Settings
+
+@Serializable
+@Wisp("user")
+data class UserRoute(val userId: Int)
 
 @Serializable
 @Wisp("splash")
