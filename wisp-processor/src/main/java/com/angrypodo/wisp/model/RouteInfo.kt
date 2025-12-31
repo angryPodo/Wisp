@@ -38,5 +38,6 @@ internal data class ParameterInfo(
     val name: String,
     val typeName: TypeName,
     val isNullable: Boolean,
-    val isEnum: Boolean
+    val isEnum: Boolean,
+    val hasDefault: Boolean
 )
