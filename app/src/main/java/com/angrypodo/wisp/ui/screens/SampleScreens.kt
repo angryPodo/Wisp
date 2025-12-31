@@ -20,7 +20,11 @@ import com.angrypodo.wisp.runtime.Wisp
 import kotlinx.coroutines.delay
 
 @Composable
-fun HomeScreen(onNavigateToProduct: () -> Unit, onNavigateToSettings: () -> Unit) {
+fun HomeScreen(
+    onNavigateToProduct: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToMultiStack: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -29,17 +33,21 @@ fun HomeScreen(onNavigateToProduct: () -> Unit, onNavigateToSettings: () -> Unit
         Text(text = "Home Screen", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onNavigateToProduct) {
-            Text(text = "Go to Product 123 -> Settings (Deep Link)")
+            Text(text = "Go to Product 123 -> Settings")
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onNavigateToSettings) {
-            Text(text = "Go to Settings (Single Deep Link)")
+            Text(text = "Go to Settings")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToMultiStack) {
+            Text(text = "Product(123) -> User(99)")
         }
     }
 }
 
 @Composable
-fun ProductDetailScreen(productId: String) {
+fun ProductDetailScreen(productId: Int, showReviews: Boolean) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -48,6 +56,7 @@ fun ProductDetailScreen(productId: String) {
         Text(text = "Product Detail Screen", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Product ID: $productId", fontSize = 20.sp)
+        Text(text = "Show Reviews: $showReviews", fontSize = 16.sp)
     }
 }
 
@@ -59,6 +68,19 @@ fun SettingsScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Settings Screen", fontSize = 24.sp)
+    }
+}
+
+@Composable
+fun UserScreen(userId: Int) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "User Screen", fontSize = 24.sp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "User ID: $userId", fontSize = 20.sp)
     }
 }
 
@@ -83,10 +105,8 @@ fun SplashScreen(
             }
         } else {
             // Deep link found.
-            // The first route is "splash", which we are already on.
-            // We navigate to the rest of the stack.
-            val routesToNavigate = routes.drop(1)
-            wisp.navigateTo(navController, routesToNavigate)
+            // Navigate to the parsed stack.
+            wisp.navigateTo(navController, routes)
         }
     }
 
