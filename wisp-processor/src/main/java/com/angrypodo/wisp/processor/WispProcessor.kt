@@ -102,9 +102,24 @@ internal class WispProcessor(
         routeInfos: List<RouteInfo>,
         sourceFiles: List<KSFile>
     ) {
-        val fileSpec = registryGenerator.generate(routeInfos)
+        val generatedRegistry = registryGenerator.generate(routeInfos)
         val dependencies = Dependencies(true, *sourceFiles.toTypedArray())
-        fileSpec.writeTo(codeGenerator, dependencies)
+
+        generatedRegistry.fileSpec.writeTo(codeGenerator, dependencies)
+
+        val resourceFile = "META-INF/services/com.angrypodo.wisp.runtime.spi.WispModuleRegistry"
+        try {
+            codeGenerator.createNewFile(
+                dependencies = dependencies,
+                packageName = "",
+                fileName = resourceFile,
+                extensionName = ""
+            ).use { outputStream ->
+                outputStream.write(generatedRegistry.className.toByteArray())
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to generate ServiceLoader metadata: ${e.message}")
+        }
     }
 
     private fun KSClassDeclaration.hasSerializableAnnotation(): Boolean {

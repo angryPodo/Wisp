@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 internal class RegistryGeneratorTest {
 
     @Test
-    @DisplayName("RouteInfo를 받아 WispRegistry 오브젝트와 맵을 생성한다")
+    @DisplayName("RouteInfo를 받아 WispModuleRegistry 오브젝트와 맵을 생성한다")
     fun `generate_registry_with_multiple_routes`() {
         // Given: RouteInfo 데이터 2개
         val homeRoute = ObjectRouteInfo(
@@ -29,13 +29,19 @@ internal class RegistryGeneratorTest {
         val routes = listOf(homeRoute, profileRoute)
 
         // When: 코드 생성 실행
-        val fileSpec = WispRegistryGenerator().generate(routes)
-        val generatedCode = fileSpec.toString()
+        val generatedRegistry = WispRegistryGenerator().generate(routes)
+        val generatedCode = generatedRegistry.fileSpec.toString()
 
-        // Then: 생성된 WispRegistry 객체를 반환
-        assertTrue(generatedCode.contains("object WispRegistry"))
+        // Then: 생성된 WispModuleRegistry 객체를 반환 (해시값이 포함된 이름)
+        assertTrue(generatedCode.contains("object WispModuleRegistry_"))
+        // SPI 인터페이스 구현 확인
+        assertTrue(generatedCode.contains(": WispModuleRegistry"))
+        // 맵 생성 확인
         assertTrue(generatedCode.contains("val factories: Map<String, RouteFactory> = mapOf("))
+        // getRoutes 메서드 확인
+        assertTrue(generatedCode.contains("override fun getRoutes"))
 
+        // 라우트 팩토리 매핑 확인
         assertTrue(generatedCode.contains("import com.example.HomeRouteFactory"))
         assertTrue(generatedCode.contains("\"home\" to HomeRouteFactory"))
 
