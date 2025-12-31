@@ -4,6 +4,8 @@
 
 **Wisp**는 Jetpack Compose를 위한 타입 세이프(type-safe), 서버 주도(server-driven) 딥링크 라이브러리입니다. 단일 표준 URI를 기반으로 내비게이션 백스택을 동적으로 구성할 수 있게 하여, 표준 `navigation-compose` 라이브러리의 정적 백스택 한계를 극복합니다.
 
+번역: [Read in English](README.md)
+
 ## 🤔 Wisp, 왜 필요한가요?
 
 Jetpack Compose의 표준 딥링크 기능은 미리 정의된 정적 백스택을 만드는 데 주로 사용됩니다. 이 때문에 서버가 실시간으로 동적인 사용자 여정(예: `상품 화면 -> 쿠폰 화면 -> 결제 화면`)을 제어해야 하는 시나리오를 구현하기는 어렵습니다.
