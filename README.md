@@ -1,136 +1,142 @@
-# Wisp: 타입 세이프 서버 주도 딥링크 라이브러리
+# Wisp
 
-**Wisp**는 Jetpack Compose의 타입 세이프 네비게이션 환경에서, 서버가 동적으로 정의하는 백스택을 화면 깜빡임 없이 손쉽게 탐색할 수 있게 해주는 어노테이션 기반 딥링크 라이브러리입니다.
+[![CI](https://github.com/angrypodo/wisp/actions/workflows/ci.yml/badge.svg)](https://github.com/angrypodo/wisp/actions/workflows/ci.yml)
 
-## 🤔 왜 Wisp인가요?
+**Wisp** is a type-safe, server-driven deep link library for Jetpack Compose. It allows you to dynamically build your navigation backstack from a single, standard URI, overcoming the static backstack limitations of the `navigation-compose` library.
 
-Jetpack Compose 환경에서 `navigation-compose`의 기본 딥링크는 정적인 백스택만 생성할 수 있어, 서버가 동적으로 사용자 여정(User Journey)을 제어하려는 요구사항을 충족하기 어렵습니다. Wisp는 이 과정을 자동화하여 개발자가 오직 **라우트 정의**에만 집중할 수 있도록 돕습니다.
+## 🤔 Why Wisp?
 
-## ✨ 핵심 원칙
+Standard deep links in Jetpack Compose often lead to predefined, static backstacks. It's challenging to implement scenarios where a server needs to dictate a dynamic user journey on the fly (e.g., `Product Screen -> Coupon Screen -> Checkout Screen`).
 
--   **서버 주도 (Server-Driven):** 백스택 구성의 모든 권한은 서버가 갖습니다.
--   **단순함 (Simplicity):** 개발자는 라우트 클래스 정의와 어노테이션 추가 외에 복잡한 로직을 신경 쓰지 않습니다.
--   **유연성 (Flexibility):** URI 파싱 로직을 외부에서 주입할 수 있어, 어떤 형태의 딥링크 URI 스킴(Scheme)이라도 지원할 수 있습니다.
+Wisp automates this process by building the entire backstack from the URI's path segments. It uses annotation processing (KSP) to generate the necessary boilerplate, allowing you to focus solely on defining your routes.
 
-## 🛠️ 설치
+## 🏛️ Architecture & Prerequisites
 
-**1. `build.gradle.kts` (Project Level)**
-`settings.gradle.kts`가 아닌 프로젝트 레벨의 `build.gradle.kts`에 KSP 플러그인을 추가합니다.
-```kotlin
-plugins {
-    // ...
-    alias(libs.plugins.ksp) apply false
-}
-```
+- **Single-Activity Architecture:** Wisp is designed for a **Single-Activity Architecture** and does not support navigating between different Activities. This aligns with the modern Android development practices recommended for Jetpack Compose.
+- **Jetpack Navigation & Type-Safety:** The library is an extension of Jetpack Navigation Compose and is exclusively designed for its **type-safe navigation** paradigm. It requires a `NavController` and does not support traditional string-based routes.
+- **Multi-Module Support:** Wisp fully supports multi-module projects. It automatically discovers `@Wisp` route definitions from all modules that include the library, using a `ServiceLoader` pattern.
 
-**2. `build.gradle.kts` (App Module Level)**
-`app` 모듈의 `build.gradle.kts`에 플러그인과 의존성을 추가합니다.
-```kotlin
-plugins {
-    // ...
-    alias(libs.plugins.ksp)
-}
+## 🚀 How to Use
 
-dependencies {
-    // Wisp
-    implementation(project(":wisp-runtime"))
-    ksp(project(":wisp-processor"))
+**Note:** Wisp is not yet published to Maven Central. To use it, you currently need to clone this repository and include the modules in your project locally.
 
-    // ... 기타 의존성
-}
-```
+### 1. Define Routes
 
-## 🚀 사용법
+Designate a deep link destination by adding the `@Wisp` annotation to any `@Serializable` `data class` or `object`. The string passed to `@Wisp` is the path segment that will be used in the deep link URI.
 
-### 1. 라우트 정의
-
-`@Serializable` 어노테이션이 붙은 `data class` 또는 `object`에 `@Wisp` 어노테이션을 추가하여 딥링크 대상으로 지정합니다.
+Route properties are automatically populated from the URI's **query parameters**. If a property has a **default value**, it is considered optional.
 
 ```kotlin
-// app/src/main/java/com/example/app/Routes.kt
-
+// In your navigation or feature module
 import com.angrypodo.wisp.annotations.Wisp
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Wisp("home")
-data object Home
-
-@Serializable
-@Wisp("product/{productId}")
-data class ProductDetail(val productId: String)
-
-@Serializable
-@Wisp("settings")
-data object Settings
+@Wisp("product") // Matches path segment "product"
+data class ProductDetail(
+    val productId: Int, // Populated from "?productId=..."
+    val showReviews: Boolean = false // Optional, populated from "?showReviews=..."
+)
 ```
 
-### 2. 라이브러리 초기화
+### 2. Configure the Manifest
 
-`Application` 클래스의 `onCreate()`에서, KSP가 생성한 `WispRegistry`를 사용하여 `Wisp` 라이브러리를 초기화합니다.
+For deep links to be accessible from outside your app, you must register an `<intent-filter>` in your `AndroidManifest.xml`. Both `scheme` and `host` are required.
+
+```xml
+<!-- In AndroidManifest.xml -->
+<activity ... >
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="app" android:host="wisp" />
+    </intent-filter>
+</activity>
+```
+
+### 3. Initialize Wisp
+
+In your `Application` class, call `Wisp.initialize()`.
 
 ```kotlin
-// app/src/main/java/com/example/app/MyApplication.kt
-
+// In your app's Application class
 import android.app.Application
-import com.angrypodo.wisp.generated.WispRegistry
 import com.angrypodo.wisp.runtime.Wisp
 
-class MyApplication : Application() {
+class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        Wisp.initialize(WispRegistry)
+        // Initialize Wisp. It will automatically find all route registries.
+        Wisp.initialize()
     }
 }
 ```
-**주의:** `AndroidManifest.xml`의 `<application>` 태그에 `android:name=".MyApplication"` 속성을 추가하는 것을 잊지 마세요.
+> **Note:** Don't forget to add `android:name=".SampleApplication"` to the `<application>` tag in your `AndroidManifest.xml`.
 
-### 3. NavHost 설정
+### 4. Build and Navigate
 
-Compose `Activity`에서 `NavHost`를 설정하고, 정의한 라우트와 Composable 화면을 연결합니다.
+Construct a deep link URI and use the `navigateTo` extension function on your `NavController`.
 
-```kotlin
-// app/src/main/java/com/example/app/MainActivity.kt
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = Home) {
-                composable<Home> { HomeScreen(navController) }
-                composable<ProductDetail> { backStackEntry ->
-                    val product = backStackEntry.toRoute<ProductDetail>()
-                    ProductDetailScreen(product.productId)
-                }
-                composable<Settings> { SettingsScreen() }
-            }
-        }
-    }
-}
-```
-
-### 4. 딥링크 탐색 실행
-
-이제 앱의 어느 곳에서든 `NavController`만 있다면 `navigateTo(uri)` 확장 함수를 사용하여 동적 백스택을 탐색할 수 있습니다.
-
-- **URI 형식:** `scheme://host?stack={encoded_stack}`
-- **`stack` 파라미터:**
-    - 개별 백스택 경로는 `|` 문자로 구분합니다.
-    - URL 인코딩이 필요할 수 있습니다.
+- **URI Format:** `scheme://host/path1/path2?paramKey=paramValue`
+- **Backstack:** The backstack is built from the URI's **path segments**.
+- **Parameters:** Route properties are populated from the URI's **query parameters**.
 
 ```kotlin
-// HomeScreen.kt 에서 버튼 클릭 시 딥링크 실행
-
-Button(onClick = {
-    // 백스택: ProductDetail(productId="123") -> Settings
-    val uri = "app://wisp?stack=product/123|settings".toUri()
-    navController.navigateTo(uri)
-}) {
-    Text("Deep Link Navigation")
-}
+// This URI creates a backstack: ProductDetail -> UserRoute
+// - ProductDetail gets productId=123. 'showReviews' uses its default value (false).
+// - UserRoute gets userId=99
+val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
+navController.navigateTo(uri)
 ```
 
+## 🧪 Testing
 
-https://github.com/user-attachments/assets/08b18c00-3a59-4300-96f0-b78ef3119932
+### Running the Sample App
 
+1.  Clone this repository and open it in Android Studio.
+2.  Select the `app` run configuration and run it on an emulator or a physical device.
+3.  Use the buttons in the app to test navigation.
+
+### Testing with ADB
+
+You can test your deep links directly from the command line using `adb`. This is a great way to simulate a link click from an external source.
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "app://wisp/product/user?productId=123&userId=99"
+```
+
+## Advanced Usage
+
+### Custom URI Parser
+
+By default, Wisp parses the backstack from the URI path by splitting it with a `/` delimiter. If your deep link scheme requires a different logic (e.g., using `|` as a delimiter), you can provide your own implementation of the `WispUriParser` interface.
+
+```kotlin
+val myParser = DefaultWispUriParser(delimiter = "|")
+Wisp.initialize(parser = myParser)
+```
+
+## ⚠️ Constraints & Considerations Summary
+
+- **Parameter Source:** Route parameters are populated **exclusively from URI query parameters**. The path is used only for defining the backstack sequence.
+- **Kotlinx Serialization:** Wisp relies heavily on `kotlinx.serialization` to deserialize query parameters into your route data classes.
+- **Parameter Naming:** The query parameter keys in the URI must exactly match the property names in your route `data class`.
+
+## 📜 License
+
+```
+Copyright 2024 angrypodo
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
