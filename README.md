@@ -150,6 +150,25 @@ val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
 navController.navigateTo(uri)
 ```
 
+## 🧪 Testing
+
+### Running the Sample App
+
+1.  Clone this repository and open it in Android Studio.
+2.  Select the `app` run configuration and run it on an emulator or a physical device.
+3.  Use the buttons in the app to test navigation.
+
+### Testing with ADB
+
+You can test your deep links directly from the command line using `adb`. This is a great way to simulate a link click from an external source.
+
+**Important:** When testing multiple parameters on the command line, you must escape the `&` character (`\&`) or wrap the entire URI in single quotes to prevent the shell from interpreting it as a background command.
+
+```bash
+# Escape the '&' character with a backslash
+adb shell am start -a android.intent.action.VIEW -d "app://wisp/product/user?productId=123\&userId=99"
+```
+
 ## Advanced Usage
 
 ### Custom URI Parser

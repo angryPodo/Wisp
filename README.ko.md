@@ -25,7 +25,7 @@ Wisp는 URI의 경로 세그먼트(path segments)로부터 전체 백스택을 �
 
 ## 🏛️ 아키텍처 및 요구사항
 
-- **싱글 액티비티 아키텍처:** Wisp는 **싱글 액티비티 구조(Single-Activity Architecture)**를 위해 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
+- **싱글 액티비티 아키텍처:** Wisp는 싱글 액티비티 구조(Single-Activity Architecture)를 위해 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
 - **Jetpack Navigation 및 타입 안정성:** 이 라이브러리는 Jetpack Navigation Compose의 **타입 세이프(type-safe) 내비게이션** 패러다임 전용으로 설계되었습니다. `NavController`가 반드시 필요하며, 전통적인 문자열 기반의 라우트는 지원하지 않습니다.
 - **멀티 모듈 지원:** Wisp는 멀티 모듈 프로젝트를 완벽하게 지원합니다. `ServiceLoader` 패턴을 사용하여, 라이브러리가 포함된 모든 모듈로부터 `@Wisp` 라우트 정의를 자동으로 탐지합니다.
 - **최소 요구사항:**
@@ -84,7 +84,7 @@ dependencies {
 
 `@Serializable` 어노테이션이 달린 `data class`나 `object`에 `@Wisp` 어노테이션을 추가하여 딥링크 대상을 지정합니다.
 
-라우트 클래스의 속성들은 URI의 **쿼리 파라미터**로부터 자동으로 값이 채워집니다. 만약 속성에 **기본값(default value)**이 있다면, 해당 속성은 선택적(optional)인 값이 됩니다.
+라우트 클래스의 속성들은 URI의 **쿼리 파라미터**로부터 자동으로 값이 채워집니다. 만약 속성에 기본값(default value)이 있다면, 해당 속성은 선택적(optional)인 값이 됩니다.
 
 ```kotlin
 // 내비게이션 또는 기능 모듈 내부
@@ -147,6 +147,25 @@ class SampleApplication : Application() {
 // ProductDetail(productId=123) -> UserRoute(userId=99) 백스택을 생성합니다.
 val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
 navController.navigateTo(uri)
+```
+
+## 🧪 테스트 방법 (Testing)
+
+### 샘플 앱 실행하기
+
+1.  이 리포지토리를 클론하여 Android Studio에서 엽니다.
+2.  `app` 실행 구성을 선택하고 에뮬레이터나 실제 기기에서 실행합니다.
+3.  앱 내의 버튼을 눌러 내비게이션을 테스트합니다.
+
+### ADB로 테스트하기
+
+`adb`를 사용하여 커맨드 라인에서 직접 딥링크를 테스트할 수 있습니다. 이는 외부 소스로부터의 링크 클릭을 시뮬레이션하는 좋은 방법입니다.
+
+**중요:** 커맨드 라인에서 여러 파라미터를 테스트할 때는 `&` 문자가 백그라운드 실행 명령으로 인식되지 않도록 `\&`로 이스케이프하거나 전체 URI를 따옴표로 감싸야 합니다.
+
+```bash
+# '&' 문자를 백슬래시(\)로 이스케이프합니다
+adb shell am start -a android.intent.action.VIEW -d "app://wisp/product/user?productId=123\&userId=99"
 ```
 
 ## 고급 사용법 (Advanced Usage)
