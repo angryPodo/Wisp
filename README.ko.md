@@ -149,6 +149,25 @@ val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
 navController.navigateTo(uri)
 ```
 
+## 🧪 테스트 방법 (Testing)
+
+### 샘플 앱 실행하기
+
+1.  이 리포지토리를 클론하여 Android Studio에서 엽니다.
+2.  `app` 실행 구성을 선택하고 에뮬레이터나 실제 기기에서 실행합니다.
+3.  앱 내의 버튼을 눌러 내비게이션을 테스트합니다.
+
+### ADB로 테스트하기
+
+`adb`를 사용하여 커맨드 라인에서 직접 딥링크를 테스트할 수 있습니다. 이는 외부 소스로부터의 링크 클릭을 시뮬레이션하는 좋은 방법입니다.
+
+**중요:** 커맨드 라인에서 여러 파라미터를 테스트할 때는 `&` 문자가 백그라운드 실행 명령으로 인식되지 않도록 `\&`로 이스케이프하거나 전체 URI를 따옴표로 감싸야 합니다.
+
+```bash
+# '&' 문자를 백슬래시(\)로 이스케이프합니다
+adb shell am start -a android.intent.action.VIEW -d "app://wisp/product/user?productId=123\&userId=99"
+```
+
 ## 고급 사용법 (Advanced Usage)
 
 ### 커스텀 URI 파서
