@@ -38,10 +38,6 @@ kotlin {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 dependencies {
     api(project(":wisp-annotations"))
 

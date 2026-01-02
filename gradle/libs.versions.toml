@@ -1,50 +1,52 @@
 [versions]
-# Build Configuration
+# Build & Publish
 androidGradlePlugin = "8.13.0"
+vanniktechMavenPublish = "0.30.0"
+ksp = "2.3.0"
+ktlint = "11.5.1"
+
+# Kotlin
+kotlin = "2.2.21"
+kotlinxSerialization = "1.9.0"
+kotlinpoet = "2.2.0"
+
+# Android SDK
 compileSdk = "36"
 minSdk = "28"
 jvmTarget = "11"
 
-# Kotlin
-kotlin = "2.2.21"
-ksp = "2.3.0"
-kotlinxSerialization = "1.9.0"
-kotlinpoet = "2.2.0"
-
-# AndroidX
+# AndroidX & Compose
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
 activityCompose = "1.11.0"
 composeBom = "2025.10.01"
 composeNavigation = "2.9.5"
+material = "1.13.0"
 
 # Test
 junit = "6.0.1"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 
-# Third Party
-material = "1.13.0"
-ktlint = "11.5.1"
-
 [libraries]
-# Build Tools
+# --- Build Tools & Plugins ---
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+vanniktech-maven-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechMavenPublish" }
 
-# Code Generation
+# --- Code Generation ---
 ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 kotlinpoet-ksp = { group = "com.squareup", name = "kotlinpoet-ksp", version.ref = "kotlinpoet" }
 
-# Kotlin & Coroutines
+# --- Kotlin & Libraries ---
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
-# AndroidX Core
+# --- AndroidX Core & UI ---
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
-# AndroidX Compose
+# --- AndroidX Compose ---
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -55,7 +57,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "composeNavigation" }
 
-# Test
+# --- Test ---
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
@@ -76,8 +78,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
-# KSP
+# Tools
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
-# Lint
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
