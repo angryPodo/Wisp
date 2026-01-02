@@ -43,10 +43,6 @@ kotlin {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 dependencies {
     implementation(project(":wisp-runtime"))
     ksp(project(":wisp-processor"))
