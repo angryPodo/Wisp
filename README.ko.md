@@ -25,7 +25,7 @@ Wisp는 URI의 경로 세그먼트(path segments)로부터 전체 백스택을 �
 
 ## 🏛️ 아키텍처 및 요구사항
 
-- **싱글 액티비티 아키텍처:** Wisp는 **싱글 액티비티 구조(Single-Activity Architecture)**를 위해 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
+- **싱글 액티비티 아키텍처:** Wisp는 싱글 액티비티 구조(Single-Activity Architecture)를 위해 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
 - **Jetpack Navigation 및 타입 안정성:** 이 라이브러리는 Jetpack Navigation Compose의 **타입 세이프(type-safe) 내비게이션** 패러다임 전용으로 설계되었습니다. `NavController`가 반드시 필요하며, 전통적인 문자열 기반의 라우트는 지원하지 않습니다.
 - **멀티 모듈 지원:** Wisp는 멀티 모듈 프로젝트를 완벽하게 지원합니다. `ServiceLoader` 패턴을 사용하여, 라이브러리가 포함된 모든 모듈로부터 `@Wisp` 라우트 정의를 자동으로 탐지합니다.
 - **최소 요구사항:**
@@ -84,7 +84,7 @@ dependencies {
 
 `@Serializable` 어노테이션이 달린 `data class`나 `object`에 `@Wisp` 어노테이션을 추가하여 딥링크 대상을 지정합니다.
 
-라우트 클래스의 속성들은 URI의 **쿼리 파라미터**로부터 자동으로 값이 채워집니다. 만약 속성에 **기본값(default value)**이 있다면, 해당 속성은 선택적(optional)인 값이 됩니다.
+라우트 클래스의 속성들은 URI의 **쿼리 파라미터**로부터 자동으로 값이 채워집니다. 만약 속성에 기본값(default value)이 있다면, 해당 속성은 선택적(optional)인 값이 됩니다.
 
 ```kotlin
 // 내비게이션 또는 기능 모듈 내부
