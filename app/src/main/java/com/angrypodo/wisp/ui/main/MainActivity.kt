@@ -51,8 +51,15 @@ private fun WispNavHost(deepLinkUri: Uri?) {
     NavHost(navController = navController, startDestination = Splash) {
         composable<Splash> {
             SplashScreen(
-                navController = navController,
-                uri = deepLinkUri
+                onSplashFinished = {
+                    if (deepLinkUri != null) {
+                        navController.navigateTo(deepLinkUri)
+                    } else {
+                        navController.navigate(Home) {
+                            popUpTo(Splash) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
 
