@@ -1,6 +1,5 @@
 package com.angrypodo.wisp.ui.screens
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,9 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.angrypodo.wisp.navigation.Home
-import com.angrypodo.wisp.runtime.Wisp
 import kotlinx.coroutines.delay
 
 @Composable
@@ -86,28 +82,13 @@ fun UserScreen(userId: Int) {
 
 @Composable
 fun SplashScreen(
-    navController: NavController,
-    uri: Uri?
+    onSplashFinished: () -> Unit
 ) {
-    val wisp = Wisp.getDefaultInstance()
-
     // A real app would check login status, fetch initial data, etc.
     // Here we just simulate a delay.
     LaunchedEffect(Unit) {
         delay(1500)
-
-        val routes = uri?.let { wisp.resolveRoutes(it) }
-
-        if (routes.isNullOrEmpty()) {
-            // No deep link, navigate to home as usual.
-            navController.navigate(Home) {
-                popUpTo(navController.graph.id) { inclusive = true }
-            }
-        } else {
-            // Deep link found.
-            // Navigate to the parsed stack.
-            wisp.navigateTo(navController, routes)
-        }
+        onSplashFinished()
     }
 
     Column(
