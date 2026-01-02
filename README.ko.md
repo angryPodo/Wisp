@@ -1,10 +1,21 @@
 # Wisp
 
-[![CI](https://github.com/angrypodo/wisp/actions/workflows/ci.yml/badge.svg)](https://github.com/angrypodo/wisp/actions/workflows/ci.yml)
-
-**Wisp**는 Jetpack Compose를 위한 타입 세이프(type-safe), 서버 주도(server-driven) 딥링크 라이브러리입니다. 단일 표준 URI를 기반으로 내비게이션 백스택을 동적으로 구성할 수 있게 하여, 표준 `navigation-compose` 라이브러리의 정적 백스택 한계를 극복합니다.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
+[![Build Status](https://github.com/angrypodo/wisp/actions/workflows/ci.yml/badge.svg)](https://github.com/angrypodo/wisp/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.angrypodo/wisp-runtime)](https://central.sonatype.com/artifact/io.github.angrypodo/wisp-runtime)
 
 번역: [Read in English](README.md)
+
+<br>
+
+<p align="center">
+  <strong>Wisp</strong>는 Jetpack Compose를 위한 타입 세이프(type-safe), 서버 주도(server-driven) 딥링크 라이브러리입니다.<br>
+  단일 표준 URI를 기반으로 내비게이션 백스택을 동적으로 구성할 수 있게 하여,<br>
+  표준 <code>navigation-compose</code> 라이브러리의 정적 백스택 한계를 극복합니다.
+</p>
+
+<br>
 
 ## 🤔 Wisp, 왜 필요한가요?
 
@@ -14,17 +25,64 @@ Wisp는 URI의 경로 세그먼트(path segments)로부터 전체 백스택을 �
 
 ## 🏛️ 아키텍처 및 요구사항
 
-- **싱글 액티비티 아키텍처 (Single-Activity Architecture):** Wisp는 **싱글 액티비티 구조** 전용으로 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
-- **Jetpack Navigation 및 타입 안정성:** 이 라이브러리는 Jetpack Navigation Compose의 확장 기능이며, **타입 세이프(type-safe) 내비게이션** 패러다임 전용으로 설계되었습니다. `NavController`가 반드시 필요하며, 전통적인 문자열 기반의 라우트는 지원하지 않습니다.
-- **멀티 모듈 지원 (Multi-Module Support):** Wisp는 멀티 모듈 프로젝트를 완벽하게 지원합니다. `ServiceLoader` 패턴을 사용하여, 라이브러리가 포함된 모든 모듈로부터 `@Wisp` 라우트 정의를 자동으로 탐지합니다.
+- **싱글 액티비티 아키텍처:** Wisp는 **싱글 액티비티 구조(Single-Activity Architecture)**를 위해 설계되었으며, 여러 Activity 간의 내비게이션은 지원하지 않습니다. 이는 Jetpack Compose에 권장되는 최신 안드로이드 개발 방식과 일치합니다.
+- **Jetpack Navigation 및 타입 안정성:** 이 라이브러리는 Jetpack Navigation Compose의 **타입 세이프(type-safe) 내비게이션** 패러다임 전용으로 설계되었습니다. `NavController`가 반드시 필요하며, 전통적인 문자열 기반의 라우트는 지원하지 않습니다.
+- **멀티 모듈 지원:** Wisp는 멀티 모듈 프로젝트를 완벽하게 지원합니다. `ServiceLoader` 패턴을 사용하여, 라이브러리가 포함된 모든 모듈로부터 `@Wisp` 라우트 정의를 자동으로 탐지합니다.
+- **최소 요구사항:**
+    - **minSdk:** 21 (Android 5.0)
+    - **Kotlin:** 1.9.0 이상 (KSP 호환 버전)
 
-## 🚀 사용법
+## 다운로드 (Download)
 
-**참고:** Wisp는 아직 Maven Central에 배포되지 않았습니다. 현재로서는 이 리포지토리를 클론하여 프로젝트에 로컬 모듈로 포함해야 합니다.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.angrypodo/wisp-runtime)](https://central.sonatype.com/artifact/io.github.angrypodo/wisp-runtime)
+
+### Version Catalog
+
+Version Catalog를 사용 중이라면, `libs.versions.toml` 파일에 다음과 같이 의존성을 추가할 수 있습니다:
+
+```toml
+[versions]
+#...
+wisp = "0.1.0"
+
+[libraries]
+#...
+wisp-runtime = { module = "io.github.angrypodo:wisp-runtime", version.ref = "wisp" }
+wisp-processor = { module = "io.github.angrypodo:wisp-processor", version.ref = "wisp" }
+```
+
+### Gradle
+
+프로젝트 수준의 `build.gradle.kts` 파일에 KSP 플러그인을 추가합니다. **반드시 사용하는 Kotlin 버전과 호환되는 KSP 버전을 사용하세요.** ([KSP 릴리즈 확인](https://github.com/google/ksp/releases))
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "YOUR_KSP_VERSION" apply false
+}
+```
+
+그리고 **모듈** 수준의 `build.gradle.kts` 파일에 의존성을 추가합니다:
+
+```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+}
+
+dependencies {
+    implementation("io.github.angrypodo:wisp-runtime:0.1.0")
+    ksp("io.github.angrypodo:wisp-processor:0.1.0")
+
+    // Version Catalog를 사용하는 경우
+    // implementation(libs.wisp.runtime)
+    // ksp(libs.wisp.processor)
+}
+```
+
+## 사용법 (Usage)
 
 ### 1. 라우트 정의하기
 
-`@Serializable` 어노테이션이 달린 `data class`나 `object`에 `@Wisp` 어노테이션을 추가하여 딥링크 대상을 지정합니다. `@Wisp`에 전달하는 문자열은 딥링크 URI에서 사용될 경로 세그먼트가 됩니다.
+`@Serializable` 어노테이션이 달린 `data class`나 `object`에 `@Wisp` 어노테이션을 추가하여 딥링크 대상을 지정합니다.
 
 라우트 클래스의 속성들은 URI의 **쿼리 파라미터**로부터 자동으로 값이 채워집니다. 만약 속성에 **기본값(default value)**이 있다면, 해당 속성은 선택적(optional)인 값이 됩니다.
 
@@ -34,7 +92,7 @@ import com.angrypodo.wisp.annotations.Wisp
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Wisp("product") // "product" 경로와 매칭
+@Wisp("product") // "product" 경로 세그먼트와 매칭
 data class ProductDetail(
     val productId: Int, // "?productId=..." 로부터 값을 받음
     val showReviews: Boolean = false // 선택적. "?showReviews=..." 값이 없으면 false 사용
@@ -91,23 +149,7 @@ val uri = "app://wisp/product/user?productId=123&userId=99".toUri()
 navController.navigateTo(uri)
 ```
 
-## 🧪 테스트 방법
-
-### 샘플 앱 실행하기
-
-1.  이 리포지토리를 클론하여 Android Studio에서 엽니다.
-2.  `app` 실행 구성을 선택하고 에뮬레이터나 실제 기기에서 실행합니다.
-3.  앱 내의 버튼을 눌러 내비게이션을 테스트합니다.
-
-### ADB로 테스트하기
-
-`adb`를 사용하여 커맨드 라인에서 직접 딥링크를 테스트할 수 있습니다. 이는 외부 소스로부터의 링크 클릭을 시뮬레이션하는 좋은 방법입니다.
-
-```bash
-adb shell am start -a android.intent.action.VIEW -d "app://wisp/product/user?productId=123&userId=99"
-```
-
-## 고급 사용법
+## 고급 사용법 (Advanced Usage)
 
 ### 커스텀 URI 파서
 
@@ -124,9 +166,9 @@ Wisp.initialize(parser = myParser)
 - **Kotlinx Serialization:** Wisp는 쿼리 파라미터를 라우트 데이터 클래스로 역직렬화하기 위해 `kotlinx.serialization`에 크게 의존합니다.
 - **파라미터 이름:** URI의 쿼리 파라미터 키는 라우트 `data class`의 속성 이름과 정확히 일치해야 합니다.
 
-## 📜 라이선스
+# License
 
-```
+```xml
 Copyright 2025 angrypodo
 
 Licensed under the Apache License, Version 2.0 (the "License");
