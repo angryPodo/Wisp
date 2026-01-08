@@ -1,8 +1,8 @@
 [versions]
 # Build & Publish
-androidGradlePlugin = "8.13.0"
+androidGradlePlugin = "8.13.2"
 vanniktechMavenPublish = "0.30.0"
-ksp = "2.3.0"
+ksp = "2.3.4"
 ktlint = "11.5.1"
 
 # Kotlin
@@ -18,18 +18,19 @@ jvmTarget = "17"
 # AndroidX & Compose
 coreKtx = "1.17.0"
 appcompat = "1.7.1"
-activityCompose = "1.11.0"
-composeBom = "2025.10.01"
-composeNavigation = "2.9.5"
+activityCompose = "1.12.2"
+composeBom = "2025.12.01"
+composeNavigation = "2.9.6"
 material = "1.13.0"
 
 # Test
 junit = "6.0.1"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-mockk = "1.14.7"
 robolectric = "4.16"
-kctFork = "0.12.1"
+junit4 = "4.13.2"
+mockito = "5.21.0"
+mockitoKotlin = "6.1.0"
 
 [libraries]
 # --- Build Tools & Plugins ---
@@ -71,10 +72,10 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
 # --- Unit Test Libraries ---
-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
-kct-fork-core = { module = "dev.zacsweers.kctfork:core", version.ref = "kctFork" }
-kct-fork-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kctFork" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
 
 [plugins]
 # Android
