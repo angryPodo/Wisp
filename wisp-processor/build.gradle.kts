@@ -16,10 +16,6 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
 
-    // Unit Test
-    testImplementation(libs.mockk)
-
-    // Integration Test (KCT)
-    testImplementation(libs.kct.fork.core)
-    testImplementation(libs.kct.fork.ksp)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
 }

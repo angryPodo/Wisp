@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
 plugins {
@@ -35,8 +37,8 @@ subprojects {
     if (name != "app") {
         apply(plugin = "com.vanniktech.maven.publish")
 
-        extensions.configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-            publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+        extensions.configure<MavenPublishBaseExtension> {
+            publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
             signAllPublications()
 
             coordinates("io.github.angrypodo", name, "0.1.0")
