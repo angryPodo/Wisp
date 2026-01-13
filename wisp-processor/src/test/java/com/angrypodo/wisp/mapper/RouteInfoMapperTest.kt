@@ -31,10 +31,10 @@ class RouteInfoMapperTest {
     fun `toRouteInfo returns ObjectRouteInfo for object declaration`() {
         val mockPackageName = mock<KSName>()
         whenever(mockPackageName.asString()).thenReturn("com.example")
-        
+
         val mockSimpleName = mock<KSName>()
         whenever(mockSimpleName.asString()).thenReturn("HomeScreen")
-        
+
         val mockQualifiedName = mock<KSName>()
         whenever(mockQualifiedName.asString()).thenReturn("com.example.HomeScreen")
 
@@ -43,7 +43,7 @@ class RouteInfoMapperTest {
         whenever(classDeclaration.packageName).thenReturn(mockPackageName)
         whenever(classDeclaration.simpleName).thenReturn(mockSimpleName)
         whenever(classDeclaration.qualifiedName).thenReturn(mockQualifiedName)
-        
+
         val mockAnnotation = createMockWispAnnotation("home")
         whenever(classDeclaration.annotations).thenReturn(sequenceOf(mockAnnotation))
 
@@ -58,10 +58,10 @@ class RouteInfoMapperTest {
     fun `toRouteInfo returns ClassRouteInfo for class declaration`() {
         val mockPackageName = mock<KSName>()
         whenever(mockPackageName.asString()).thenReturn("com.example")
-        
+
         val mockSimpleName = mock<KSName>()
         whenever(mockSimpleName.asString()).thenReturn("ProfileScreen")
-        
+
         val mockQualifiedName = mock<KSName>()
         whenever(mockQualifiedName.asString()).thenReturn("com.example.ProfileScreen")
 
@@ -71,7 +71,7 @@ class RouteInfoMapperTest {
         whenever(classDeclaration.simpleName).thenReturn(mockSimpleName)
         whenever(classDeclaration.qualifiedName).thenReturn(mockQualifiedName)
         whenever(classDeclaration.primaryConstructor).thenReturn(null)
-        
+
         val mockAnnotation = createMockWispAnnotation("profile")
         whenever(classDeclaration.annotations).thenReturn(sequenceOf(mockAnnotation))
 
@@ -83,19 +83,19 @@ class RouteInfoMapperTest {
 
     private fun createMockWispAnnotation(path: String): KSAnnotation {
         val annotation = mock<KSAnnotation>()
-        
+
         val shortName = mock<KSName>()
         whenever(shortName.asString()).thenReturn("Wisp")
         whenever(annotation.shortName).thenReturn(shortName)
-        
+
         val arg = mock<KSValueArgument>()
         val argName = mock<KSName>()
         whenever(argName.asString()).thenReturn("path")
         whenever(arg.name).thenReturn(argName)
         whenever(arg.value).thenReturn(path)
-        
+
         whenever(annotation.arguments).thenReturn(listOf(arg))
-        
+
         return annotation
     }
 }
