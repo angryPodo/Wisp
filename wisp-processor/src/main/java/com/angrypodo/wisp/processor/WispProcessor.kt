@@ -18,7 +18,7 @@ import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ksp.writeTo
 
 /**
- * @Wisp 어노테이션이 붙은 클래스를 찾아 유효성을 검증하고 코드를 생성하는 메인 프로세서 클래스입니다.
+ * Main processor that finds classes annotated with @Wisp, validates them, and generates code.
  */
 internal class WispProcessor(
     private val codeGenerator: CodeGenerator,
@@ -63,6 +63,12 @@ internal class WispProcessor(
 
         val routeInfo = routeClass.toRouteInfo() ?: run {
             logInvalidRouteError(routeClass)
+            return null
+        }
+
+        val validationResult = WispValidator.validateRoute(routeInfo)
+        if (validationResult is WispValidator.ValidationResult.Failure) {
+            validationResult.errors.forEach { logger.error(it, routeClass) }
             return null
         }
 

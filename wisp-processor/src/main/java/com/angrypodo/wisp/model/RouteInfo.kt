@@ -4,7 +4,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 
 /**
- * 라우트 정보를 타입에 따라 분리하여 표현하는 Sealed Interface 입니다.
+ * Sealed interface that represents route information, split by route kind.
  */
 sealed interface RouteInfo {
     val routeClassName: ClassName
@@ -13,7 +13,7 @@ sealed interface RouteInfo {
 }
 
 /**
- * 파라미터가 없는 object/data object 타입 라우트의 정보입니다.
+ * Route information for parameterless object/data object routes.
  */
 internal data class ObjectRouteInfo(
     override val routeClassName: ClassName,
@@ -22,7 +22,7 @@ internal data class ObjectRouteInfo(
 ) : RouteInfo
 
 /**
- * 생성자 파라미터가 있는 class/data class 타입 라우트의 정보입니다.
+ * Route information for class/data class routes with constructor parameters.
  */
 internal data class ClassRouteInfo(
     override val routeClassName: ClassName,
@@ -32,7 +32,7 @@ internal data class ClassRouteInfo(
 ) : RouteInfo
 
 /**
- * 라우트 생성자 파라미터 정보를 표현하는 데이터 클래스입니다.
+ * Constructor parameter information of a route.
  */
 internal data class ParameterInfo(
     val name: String,

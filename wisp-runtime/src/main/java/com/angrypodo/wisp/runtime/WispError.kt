@@ -1,21 +1,29 @@
 package com.angrypodo.wisp.runtime
 
 /**
- * Wisp 라이브러리에서 발생하는 런타임 에러를 정의하는 Sealed Class 입니다.
+ * Runtime errors produced by the Wisp library.
+ * Errors are never thrown; they are delivered via [WispResult.Failure] and the onError callback.
  */
-sealed class WispError(override val message: String) : Exception(message) {
-    class MissingParameter(path: String, paramName: String) :
-        WispError("Required parameter \"$paramName\" is missing in path \"$path\".")
-
-    class InvalidParameter(path: String, paramName: String) :
-        WispError("Parameter \"$paramName\" in path \"$path\" could not be converted.")
+sealed class WispError(
+    override val message: String,
+    override val cause: Throwable? = null
+) : Exception(message, cause) {
 
     class ParsingFailed(uri: String, reason: String) :
         WispError("Failed to parse URI: $uri. Reason: $reason")
 
-    class UnknownPath(path: String) :
-        WispError("The path \"$path\" is not registered with any @Wisp annotation.")
+    class UnknownPath(val segment: String) :
+        WispError("The path segment \"$segment\" is not registered with any @Wisp annotation.")
 
-    class NavigationFailed(reason: String, detail: String?) :
-        WispError("Navigation failed: $reason. Detail: $detail")
+    class MissingParameter(pattern: String, paramNames: String) :
+        WispError("Required parameter(s) \"$paramNames\" missing for route \"$pattern\".")
+
+    class InvalidParameter(pattern: String, detail: String?) :
+        WispError("Failed to create route for \"$pattern\". Detail: $detail")
+
+    class NavigationFailed(cause: Throwable) :
+        WispError(
+            "Navigation failed: ${cause::class.simpleName ?: "Unknown"}. Detail: ${cause.message}",
+            cause
+        )
 }

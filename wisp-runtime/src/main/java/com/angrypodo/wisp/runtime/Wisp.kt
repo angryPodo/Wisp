@@ -2,32 +2,126 @@ package com.angrypodo.wisp.runtime
 
 import android.net.Uri
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.angrypodo.wisp.runtime.matcher.WispUriMatcher
+import com.angrypodo.wisp.runtime.matcher.WispRouteResolver
 import com.angrypodo.wisp.runtime.parser.DefaultWispUriParser
 import com.angrypodo.wisp.runtime.parser.WispUriParser
 import com.angrypodo.wisp.runtime.spi.RouteFactory
 import com.angrypodo.wisp.runtime.spi.WispModuleRegistry
 import java.util.ServiceLoader
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.MissingFieldException
 
 /**
- * Wisp 라이브러리의 핵심 로직을 수행하고, 내비게이션 기능을 실행하는 클래스입니다.
+ * Core entry point of the Wisp library. Resolves deep link URIs into route
+ * objects and performs the navigation.
+ *
+ * @param routes Map of route pattern string -> [RouteFactory]
+ * @param parser Splits a URI path into path segments
+ * @param onError Global callback invoked whenever deep link handling fails
+ *                (logging, fallback policies, etc.)
  */
 class Wisp(
-    private val mergedRoutes: Map<String, RouteFactory>,
-    private val parser: WispUriParser = DefaultWispUriParser()
+    routes: Map<String, RouteFactory>,
+    private val parser: WispUriParser = DefaultWispUriParser(),
+    private val onError: ((WispError) -> Unit)? = null
 ) {
+    private val resolver = WispRouteResolver(routes)
+    private var deferredUri: Uri? = null
 
     /**
-     * URI를 분석하여 @Serializable 라우트 객체의 리스트로 변환합니다.
-     * @throws WispError.UnknownPath 등록되지 않은 경로가 포함된 경우
+     * Resolves the URI into a list of route objects in backstack order.
+     * Never throws; failures are returned as [WispResult.Failure].
      */
-    fun resolveRoutes(uri: Uri): List<Any> {
-        val paths = parser.parse(uri)
-        val queryParams = getQueryParams(uri)
+    fun resolve(uri: Uri): WispResult {
+        val pathSegments = parser.parse(uri)
+        if (pathSegments.isEmpty()) {
+            return failure(WispError.ParsingFailed(uri.toString(), "URI has no path segments."))
+        }
 
-        return paths.map { path ->
-            matchAndCreate(path, queryParams) ?: throw WispError.UnknownPath(path)
+        return when (val matched = resolver.resolve(pathSegments)) {
+            is WispRouteResolver.Result.Unmatched ->
+                failure(WispError.UnknownPath(matched.segment))
+
+            is WispRouteResolver.Result.Matched ->
+                createRoutes(matched.matches, getQueryParams(uri))
+        }
+    }
+
+    /**
+     * Resolves the URI and rebuilds the backstack. The first route clears the
+     * existing backstack, and the remaining routes are navigated sequentially
+     * on top of it.
+     */
+    fun navigateTo(navController: NavController, uri: Uri): WispResult {
+        val resolved = resolve(uri)
+        if (resolved !is WispResult.Success) return resolved
+
+        return try {
+            performNavigation(navController, resolved.routes)
+            resolved
+        } catch (e: Exception) {
+            failure(WispError.NavigationFailed(e))
+        }
+    }
+
+    /**
+     * Holds a deep link URI instead of executing it immediately.
+     * Use this to gate deep links behind splash-screen work such as
+     * login/token validation, then execute via [navigateToDeferred].
+     */
+    fun defer(uri: Uri?) {
+        deferredUri = uri
+    }
+
+    /**
+     * Consumes the deferred URI, if any, and navigates to it.
+     * Returns null when no URI is deferred.
+     */
+    fun navigateToDeferred(navController: NavController): WispResult? {
+        val uri = consumeDeferredUri() ?: return null
+        return navigateTo(navController, uri)
+    }
+
+    internal fun consumeDeferredUri(): Uri? {
+        val uri = deferredUri
+        deferredUri = null
+        return uri
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun createRoutes(
+        matches: List<WispRouteResolver.Match>,
+        queryParams: Map<String, String>
+    ): WispResult {
+        val routes = matches.map { match ->
+            // Path variables take precedence over query parameters.
+            val params = queryParams + match.pathVariables
+            try {
+                match.factory.create(params)
+            } catch (e: MissingFieldException) {
+                return failure(
+                    WispError.MissingParameter(match.pattern, e.missingFields.joinToString())
+                )
+            } catch (e: Exception) {
+                return failure(WispError.InvalidParameter(match.pattern, e.message))
+            }
+        }
+        return WispResult.Success(routes)
+    }
+
+    private fun performNavigation(navController: NavController, routes: List<Any>) {
+        navController.navigate(routes.first()) {
+            // Pop against the graph id so the whole backstack is cleared even
+            // when the start destination has already left the stack
+            // (e.g. a warm-start deep link).
+            popUpTo(navController.graph.id) {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+
+        routes.drop(1).forEach { route ->
+            navController.navigate(route)
         }
     }
 
@@ -41,69 +135,46 @@ class Wisp(
         return params
     }
 
-    private fun matchAndCreate(path: String, queryParams: Map<String, String>): Any? {
-        for ((pattern, factory) in mergedRoutes) {
-            val pathVariables = WispUriMatcher.match(path, pattern)
-            if (pathVariables != null) {
-                // Path Variable과 Query Parameter 병합 (Query Param 우선순위 낮음)
-                val combinedParams = queryParams + pathVariables
-                return factory.create(combinedParams)
-            }
-        }
-        return null
-    }
-
-    /**
-     * 주어진 라우트 객체 리스트를 사용하여 백스택을 새로 구성하고 탐색합니다.
-     * NavController.navigate를 순차적으로 호출하여 백스택을 구성합니다.
-     */
-    fun navigateTo(navController: NavController, routes: List<Any>) {
-        if (routes.isEmpty()) return
-
-        try {
-            val firstRoute = routes.first()
-            navController.navigate(firstRoute) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
-
-            routes.drop(1).forEach { route ->
-                navController.navigate(route)
-            }
-        } catch (e: Exception) {
-            throw WispError.NavigationFailed(
-                reason = e::class.simpleName ?: "Unknown",
-                detail = e.message
-            )
-        }
+    private fun failure(error: WispError): WispResult.Failure {
+        onError?.invoke(error)
+        return WispResult.Failure(error)
     }
 
     companion object {
         private var instance: Wisp? = null
 
+        /**
+         * Initializes the default instance by collecting route registries from
+         * every module via ServiceLoader. Call this in Application.onCreate.
+         */
         @JvmStatic
         @Synchronized
         fun initialize(
-            parser: WispUriParser = DefaultWispUriParser()
+            parser: WispUriParser = DefaultWispUriParser(),
+            onError: ((WispError) -> Unit)? = null
         ) {
-            if (instance == null) {
-                val aggregatedRoutes = mutableMapOf<String, RouteFactory>()
-                val loader = ServiceLoader.load(WispModuleRegistry::class.java)
+            if (instance != null) return
 
-                for (registry in loader) {
-                    aggregatedRoutes.putAll(registry.getRoutes())
-                }
-
-                instance = Wisp(aggregatedRoutes, parser)
+            val aggregatedRoutes = mutableMapOf<String, RouteFactory>()
+            val loader = ServiceLoader.load(WispModuleRegistry::class.java)
+            for (registry in loader) {
+                aggregatedRoutes.putAll(registry.getRoutes())
             }
+
+            instance = Wisp(aggregatedRoutes, parser, onError)
         }
 
         fun getDefaultInstance(): Wisp {
             return instance ?: throw IllegalStateException(
                 "Wisp.initialize() must be called first in your Application class."
             )
+        }
+
+        /**
+         * Defers a deep link received in an Activity's onCreate/onNewIntent.
+         */
+        fun defer(uri: Uri?) {
+            getDefaultInstance().defer(uri)
         }
     }
 }

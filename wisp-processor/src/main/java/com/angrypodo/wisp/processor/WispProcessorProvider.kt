@@ -5,7 +5,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 /**
- * WispProcessor를 KSP에 등록하는 팩토리 클래스입니다.
+ * Factory that registers WispProcessor with KSP.
  */
 class WispProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = WispProcessor(

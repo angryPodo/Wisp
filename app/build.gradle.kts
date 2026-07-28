@@ -29,6 +29,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Sample-only: sign with the debug key so the minified build
+            // can be installed for R8 smoke testing.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

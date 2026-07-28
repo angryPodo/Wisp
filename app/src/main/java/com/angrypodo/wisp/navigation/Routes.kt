@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data object Home
 
 @Serializable
-@Wisp("product")
+@Wisp("product/{productId}")
 data class ProductDetail(
     val productId: Int,
     val showReviews: Boolean = false
@@ -19,7 +19,7 @@ data class ProductDetail(
 data object Settings
 
 @Serializable
-@Wisp("user")
+@Wisp("user/{userId}")
 data class UserRoute(val userId: Int)
 
 @Serializable

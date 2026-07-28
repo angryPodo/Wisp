@@ -41,7 +41,7 @@ subprojects {
             publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
             signAllPublications()
 
-            coordinates("io.github.angrypodo", name, "0.1.0")
+            coordinates("io.github.angrypodo", name, "0.2.0")
 
             pom {
                 name.set(project.name)
