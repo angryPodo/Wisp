@@ -43,7 +43,7 @@ class WispValidatorTest {
     }
 
     @Test
-    fun `validateDuplicatePaths treats patterns differing only by placeholder name as duplicates`() {
+    fun `validateDuplicatePaths treats placeholder-name-only differences as duplicates`() {
         val routes = listOf(
             classRoute("product/{a}", "ProductA", listOf("a")),
             classRoute("product/{b}", "ProductB", listOf("b"))

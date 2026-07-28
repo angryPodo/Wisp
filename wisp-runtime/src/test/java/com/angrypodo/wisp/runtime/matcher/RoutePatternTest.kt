@@ -80,7 +80,9 @@ class RoutePatternTest {
 
     @Test
     fun `parse rejects duplicate placeholder names`() {
-        assertThrows(IllegalArgumentException::class.java) { RoutePattern.parse("product/{id}/{id}") }
+        assertThrows(IllegalArgumentException::class.java) {
+            RoutePattern.parse("product/{id}/{id}")
+        }
     }
 
     @Test
